@@ -1,0 +1,7 @@
+
+# A simple project just to test buildpro
+# To start build run:
+#   ./buildpro.py buildpro_test
+
+sources:
+  -  buildpro_test.c
