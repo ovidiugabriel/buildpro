@@ -9,6 +9,8 @@ It is a tool for build professionals (with a role of build manager in some compa
 
 ##### Usages
 
+buildpro was designed with **incremental builds** in mind, so each build run is a **no-clean build**
+
 ```bash
 # Build a project with no-clean mode
 # Where the project file is $ProjectName.project.yml
