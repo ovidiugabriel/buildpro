@@ -7,7 +7,7 @@ buildpro stands for **Build Pro**ject, the action requested to build a project, 
 
 It is a tool for build professionals (with a role of build manager in some companies, or whatever ...)
 
-###### Usages
+##### Usages
 
 ```bash
 # Build a project with no-clean mode
@@ -17,6 +17,10 @@ python buildpro.py project-name
 # Build a project with clean enabled
 clean=1 python buildpro.py project-name
 ```
+
+###### Code Generation
+
+buildpro is able to generate Haxe extern classes to wrap over PHP code of the Barebone MVC framework.
 
 ```bash
 # python buildpro.py -proto language class-name input-file output-file
