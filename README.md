@@ -3,7 +3,7 @@
 
 ###### The name
 
-buildpro stands for **Build Pro**ject, the action requested to build a project, but also for **build pro**professional. 
+buildpro stands for **Build Pro**ject, the action requested to build a project, but also for **build pro**fessional. 
 
 It is a tool for build professionals (with a role of build manager in some companies, or whatever ...)
 
