@@ -12,17 +12,41 @@ It is a tool for build professionals (with a role of build manager in some compa
 buildpro was designed with **incremental builds** in mind, so each build run is a **no-clean build**
 
 ```bash
+#
 # Build a project with no-clean mode
-# Where the project file is $ProjectName.project.yml
-python buildpro.py project-name
+# Where the project file is projectname.project.yml
+#
+python buildpro.py projectname
+```
 
+But you can force clean also
+
+```bash
+#
 # Build a project with clean enabled
-clean=1 python buildpro.py project-name
+#
+clean=1 python buildpro.py projectname
 ```
 
 ###### Code Generation
 
-buildpro is able to generate Haxe extern classes to wrap over PHP code of the Barebone MVC framework.
+buildpro is able to generate **Haxe extern classes** to wrap over php code of the Barebone MVC framework.
+
+There is no big deal about this. You just have to specify the prototype using a **@proto** doc block comment tag.
+For example doing so:
+
+```php
+/**
+ * @proto static public main(args:Array):Int
+ */
+```
+
+Will generate the following method signature into the **Haxe extern class** 
+
+```haxe
+static public main(args:Array):Int;
+```
+
 
 ```bash
 # python buildpro.py -proto language class-name input-file output-file
