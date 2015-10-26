@@ -2,8 +2,12 @@
 import fnmatch
 import os
 import glob
+import sys
 
-root = os.path.dirname(os.path.realpath("__file__")) + '/output/release/dist/lib'
+if len(sys.argv) < 2:
+    exit(1)
+
+root = os.path.dirname(os.path.realpath("__file__")) + sys.argv[1]
 root = root.rstrip('/') + '/'
 root_len = len(root)
 
