@@ -3,5 +3,13 @@
 # To start build run:
 #   ./buildpro.py buildpro_test
 
+compiler: g++
+
 sources:
-  -  buildpro_test.c
+  - buildpro_test.cc
+
+artifact:
+  name: buildpro_test
+
+#command:
+#  gcc -c {input} -o {artifact.name}
