@@ -153,4 +153,5 @@ main.o: main.c test/xy.h
     default dependency output file.
 
 ```
-[Automatically generate makefile dependencies](http://www.microhowto.info/howto/automatically_generate_makefile_dependencies.html)
+* [Automatically generate makefile dependencies](http://www.microhowto.info/howto/automatically_generate_makefile_dependencies.html)
+* [Autodependencies with GNU make](http://scottmcpeak.com/autodepend/autodepend.html)
