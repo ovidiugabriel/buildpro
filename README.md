@@ -121,4 +121,35 @@ cd PyYAML-3.11/
 sudo python setup.py install
 ```
 
-Note: For GCC dependencies can be generated with: ` gcc [options] -MM <name>.c -MF <name>.d  `
+###### Dependencies Scanning
+
+**Note:** For GCC dependencies can be generated with: ` gcc [options] -MM <name>.c -MF <name>.d  `
+
+The result is something like:
+
+```
+main.o: main.c test/xy.h
+```
+
+
+```
+  -MM 
+    Like -M but do not mention header files that are found in system
+    header directories, nor header files that are included, directly
+    or indirectly, from such a header.
+
+    This implies that the choice of angle brackets or double quotes in
+    an #include directive does not in itself determine whether that
+    header will appear in -MM dependency output.  This is a slight
+    change in semantics from GCC versions 3.0 and earlier.
+
+  -MF file
+    When used with -M or -MM, specifies a file to write the
+    dependencies to.  If no -MF switch is given the preprocessor sends
+    the rules to the same place it would have sent preprocessed
+    output.
+
+    When used with the driver options -MD or -MMD, -MF overrides the
+    default dependency output file.
+
+```
