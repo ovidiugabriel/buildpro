@@ -42,3 +42,4 @@ for dirname, dirnames, filenames in os.walk(root):
                     sys.stdout.write(' ' + match.group(1))
             if n_matches:
                 sys.stdout.write("\n")
+            file_oject.close()
