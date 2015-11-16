@@ -14,8 +14,6 @@ root = os.path.dirname(os.path.realpath("__file__")) + sys.argv[1]
 root = root.rstrip('/') + '/'
 root_len = len(root)
 
-print('root: ' + root)
-
 depends = {}
 for dirname, dirnames, filenames in os.walk(root):
     for filename in filenames:
