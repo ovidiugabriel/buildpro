@@ -1,4 +1,7 @@
 
+This C preprocessor replacement allows you to use flexible and more powerfull macros without having to rely on m4.
+Basicaly PHP+Smarty is your new preprocessor. You can use it for any language.
+
 Accepted tokens:
 
 * `#define`
