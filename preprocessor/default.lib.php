@@ -9,6 +9,10 @@ function error_handler($code, $message, $file, $line) {
     // that's why is won't be a standard behavior to write this to the output file
     // but to the error console
     //
+    echo "|\n";
+    echo "| *** Compiler error: \n";
+    echo "|\n";
+
     echo "#line {$LINE_NUMBER} \"{$INPUT}\" \n";
     echo "#error \"{$message}\"\n";
     die;
