@@ -20,6 +20,8 @@ Other accepted tokens (provided by extension):
 
 * `@require` 
 * `@require_once`
-* `@using`
 
+Advanced:
+
+* `@using`
 * `{{expression}}` - expands a Smarty expression
