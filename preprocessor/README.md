@@ -25,4 +25,4 @@ Advanced:
 
 * `@using`
 * `{{expression}}` - evaluates a Smarty expression
-* `{%expression%}` - evaluates a PHP expression
+* `[[expression]]` - evaluates a PHP expression
