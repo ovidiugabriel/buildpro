@@ -45,6 +45,13 @@
  * #pragma
  */
 
+
+/*                                                                           */
+/* USER DEFINED CONSTANTS                                                    */
+/*                                                                           */
+
+define ('DEFAULT_PHP_LIBRARY', 'default.lib.php');
+
 /*                                                                           */
 /* --- PUBLIC OPERATIONS (GLOBAL FUNCTIONS) ---                              */
 /*                                                                           */
@@ -89,10 +96,10 @@ if (isset($argv[1]) && file_exists($argv[1])) {
     $fp = fopen($INPUT, 'r');
     if ($fp) {
         $stack = array();
-        if (getenv('YLANG_INCLUDE_PATH')) {
-            out (0, "ini_set('include_path', ini_get('include_path') . ';'. getenv('YLANG_INCLUDE_PATH'))");
+        if (getenv('INCLUDE_PATH')) {
+            out (0, "ini_set('include_path', ini_get('include_path') . ';'. getenv('INCLUDE_PATH'))");
         }
-        out (0, "include 'ylang.lib.php'");
+        out (0, "include '" . DEFAULT_PHP_LIBRARY . "'");
 
         while ($line = fgets($fp)) {
             $line       = rtrim($line);
