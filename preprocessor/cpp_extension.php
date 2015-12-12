@@ -35,9 +35,11 @@
  * #endif
  * #ifdef
  * #ifndef
- * #define
  * #include     @require
  * #import      @require_once
+ *
+ * @require
+ * @require_once
  * -----------------------------------------------------------------------------
  * Not supported.
  * -----------------------------------------------------------------------------
@@ -119,6 +121,7 @@ if (isset($argv[1]) && file_exists($argv[1])) {
             } elseif (preg_match('/#endif/', $line)) {
                 out(count($stack)-1, "endif /* $last_id */");
                 array_pop($stack);
+
             } elseif (preg_match('/#else/', $line)) {
                 out(count($stack)-1, "else: /* $last_id */");
 
@@ -160,33 +163,13 @@ if (isset($argv[1]) && file_exists($argv[1])) {
             } elseif (preg_match('/@config_load\s+([^;]+)/', $line, $matches)) {
                 out(count($stack), "_config_load('$matches[1]')");
 
-            } elseif (preg_match_all('/\{#([^#]+)#\}/', $line, $matches)) {
-                out(count($stack), "_config_var(" . var_export($matches[1], true) . ", '$line')");
-
-            } elseif (preg_match('/@assign\s+([^\s]+)\s*([^;])/', $line, $matches)) {
-                out(count($stack), "_assign('$matches[1]', '$matches[2]')");
-
-            } elseif (preg_match_all('/\@const\(([^\}]+)\)/', $line, $matches)) {
-                out(count($stack), "_constant(" . var_export($matches[1], true) . ", '$line')");
-
-            } elseif (preg_match_all('/\{\$\.const\.([^\}]+)\}/', $line)) {
-                out(count($stack), "_constant(" . var_export($matches[1], true) . ", '$line')");
-
-            } elseif (preg_match_all('/\{\$\.now\}/', $line)) {
-                // Treat predefined vars first
-                echo str_replace('{$.now}', '<?php echo time() ?>', $line) . "\n";
-
-            } elseif (preg_match_all('/\{\$([^\}]+)\}/', $line, $matches)) {
-                out(count($stack), "_var(" . var_export($matches[1], true) . ", '$line')");
-
-            } elseif (preg_match('/@const\s+([^\s]+)\s*=\s*([^;]+)/', $line, $matches)) {
-                out(count($stack), "_const('$matches[1]', '$matches[2]') /* ".uniqid()." */");
+            } elseif (preg_match_all('/\{\{(.*)\}\}/', $line, $matches)) {
+                // TODO: Expand to a Smarty expression
 
             } else {
                 echo "$line\n";
             }
         }
-
         fclose($fp);
     }
 }
