@@ -18,7 +18,7 @@
 /*                                                                           */
 /* Date         Name    Reason                                               */
 /* ------------------------------------------------------------------------- */
-/*                                                                           */
+/* 12.12.2015           Added output buffering and error reporintg line sync */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* History (END).                                                            */
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
@@ -59,15 +59,16 @@ define ('DEFAULT_PHP_LIBRARY', 'default.lib.php');
 /*                                                                           */
 
 /**
+ * @param resource $fp
  * @param integer $n_tabs
  * @param string $text
  * @return void
  */
-function out($n_tabs, $text) {
-    echo tab($n_tabs) . '<?php ' . $text . " ?>\n";
+function out($fp, $n_tabs, $text) {
+    fwrite($fp, tab($n_tabs) . '<?php ' . $text . " ?>\n");
 }
 
-/** 
+/**
  * @param integer $size
  * @return string
  */
@@ -94,62 +95,84 @@ function error($n_tabs, $text) {
 
 if (isset($argv[1]) && file_exists($argv[1])) {
     $INPUT = $argv[1];
+    $OUTPUT = 'output.php';
 
     $fp = fopen($INPUT, 'r');
     if ($fp) {
+        $outfd = fopen($OUTPUT, 'w');
+
         $stack = array();
         if (getenv('INCLUDE_PATH')) {
-            out (0, "ini_set('include_path', ini_get('include_path') . ';'. getenv('INCLUDE_PATH'))");
+            out ($outfd, 0, "ini_set('include_path', ini_get('include_path') . ';'. getenv('INCLUDE_PATH'))");
         }
-        out (0, "include '" . DEFAULT_PHP_LIBRARY . "'");
+        if (defined('DEFAULT_PHP_LIBRARY') && DEFAULT_PHP_LIBRARY) {
+            out ($outfd, 0, "include '" . DEFAULT_PHP_LIBRARY . "'");
+        }
+
+        out ($outfd, 0, '$INPUT = "'.trim($INPUT, '.\\/').'"');
+        out ($outfd, 0, "ob_start()");
+
+        $LINE_NUMBER = 0;
 
         while ($line = fgets($fp)) {
+            $LINE_NUMBER++;
+
+            out ($outfd, 0, '$LINE_NUMBER = ' . $LINE_NUMBER);
+
             $line       = rtrim($line);
             $last_id    = (count($stack) > 0) ? $stack[count($stack)-1] : '';
 
+            $comment = explode('//', $line);
+            $has_comment = count($comment)-1;
+
+            if ($has_comment) {
+                $line = array_shift($comment);
+            }
+
             if (preg_match('/#define\s+([^\s]+)\s*(.*)/', $line, $matches)) {
-                out(count($stack), "define('$matches[1]', '$matches[2]') /* ".uniqid()." */");
+                out($outfd,  count($stack), "define('$matches[1]', '$matches[2]')");
 
             } elseif (preg_match('/#if\s+(.*)/', $line, $matches)) {
                 $last_id = uniqid();
                 array_push($stack, $last_id);
-                out(count($stack)-1, "if ($matches[1]): /* $last_id */");
+                out($outfd, count($stack)-1, "if ($matches[1]):");
 
             } elseif (preg_match('/#elif\s+(.*)/', $line, $matches)) {
-                out(count($stack)-1, "elseif ($matches[1]): /* $last_id */");
+                $matches[1] = preg_replace('/defined\((.*)\)/', "defined('$1')", $matches[1]);
+                out($outfd, count($stack)-1, "elseif ($matches[1]):");
 
             } elseif (preg_match('/#endif/', $line)) {
-                out(count($stack)-1, "endif /* $last_id */");
+                out($outfd, count($stack)-1, "endif;");
                 array_pop($stack);
 
             } elseif (preg_match('/#else/', $line)) {
-                out(count($stack)-1, "else: /* $last_id */");
+                out($outfd, count($stack)-1, "else:");
 
             } elseif (preg_match('/#ifdef\s+(.*)/', $line, $matches)) {
                 $last_id = uniqid();
                 array_push($stack, $last_id);
-                out(count($stack)-1, "if (defined('$matches[1]')): /* $last_id */");
+                out($outfd, count($stack)-1, "if (defined('$matches[1]')):");
 
             } elseif (preg_match('/#ifndef\s+(.*)/', $line, $matches)) {
                 $last_id = uniqid();
                 array_push($stack, $last_id);
-                out(count($stack)-1, "if (!defined('$matches[1]')): /* $last_id */");
+                out($outfd, count($stack)-1, "if (!defined('$matches[1]')):");
 
             } elseif (preg_match('/#include\s+(.*)/', $line, $matches)) {
                 $file = trim($matches[1], '<">');
-                out(count($stack), "require '$file' /* ".uniqid()." */");
+                out($outfd, count($stack), "require '$file'");
 
             } elseif (preg_match('/@require\s+([^;]+)/', $line, $matches)) {
                 $file = trim($matches[1], '<">');
-                out(count($stack), "require '$file' /* ".uniqid()." */");
+                out($outfd, count($stack), "require '$file'");
 
             } elseif (preg_match('/#import\s+(.*)/', $line, $matches)) {
                 $file = trim($matches[1], '<">');
-                out(count($stack), "require_once '$file' /* ".uniqid()." */");
+                out($outfd, count($stack), "require_once '$file'");
 
             } elseif (preg_match('/@require_once\s+([^;]+)/', $line, $matches)) {
                 $file = trim($matches[1], '<">');
-                out(count($stack), "require_once '$file' /* ".uniqid()." */");
+                out($outfd, count($stack), "require_once '$file'");
 
             } elseif (preg_match('/#undef\s+(.*)/', $line, $matches)) {
                 error(count($stack), 'undef');
@@ -158,18 +181,53 @@ if (isset($argv[1]) && file_exists($argv[1])) {
                 error(count($stack), 'pragma');
 
             } elseif (preg_match('/@using\s+([^;]+)/', $line, $matches)) {
-                out(count($stack), "_using('$matches[1]')");
+                out($outfd, count($stack), "_using('$matches[1]')");
 
             } elseif (preg_match('/@config_load\s+([^;]+)/', $line, $matches)) {
-                out(count($stack), "_config_load('$matches[1]')");
+                out($outfd, count($stack), "_config_load('$matches[1]')");
 
-            } elseif (preg_match_all('/\{\{(.*)\}\}/', $line, $matches)) {
-                // TODO: Expand to a Smarty expression
+            } elseif (preg_match_all('/\{\{([^\}]+)\}\}/', $line, $matches)) {
+                // Expand to a PHP expression
+                fwrite($outfd, preg_replace('/\{\{([^\}]+)\}\}/', '<?php echo $1 ?>', $line));
 
             } else {
-                echo "$line\n";
+                fwrite($outfd, "$line\n");
             }
         }
+
+        out ($outfd, 0, "ob_end_flush()");
+
+        fclose($outfd);
         fclose($fp);
+
+        //
+        // BEGIN TESTCODE
+        //
+
+        echo shell_exec("php {$OUTPUT} > {$INPUT}.out; echo \$?");
+
+        echo trim(file_get_contents("{$INPUT}.out")) . "\n";
+        echo "\n";
+die;
+        echo "Compiler output: \n";
+        echo "-----------------\n";
+        echo shell_exec("dmc {$INPUT}.out");
+
+
+        if (file_exists("{$INPUT}.exe")) {
+            echo "Program output: \n";
+            echo "----------------\n";
+
+            echo shell_exec("{$INPUT}.exe");
+
+            unlink("{$INPUT}.exe");
+            unlink("{$INPUT}.map");
+            unlink("{$INPUT}.obj");
+            unlink("{$INPUT}.out");
+        }
+
+        //
+        // END TESTCODE
+        //
     }
 }
