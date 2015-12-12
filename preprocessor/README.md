@@ -24,5 +24,4 @@ Other accepted tokens (provided by extension):
 Advanced:
 
 * `@using`
-* `{{expression}}` - evaluates a Smarty expression
-* `[[expression]]` - evaluates a PHP expression
+* `{{expression}}` - expands to a php expression
