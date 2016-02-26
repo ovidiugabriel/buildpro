@@ -131,6 +131,12 @@ def sublime_workspace():
     # So this function is ignoring .sublime-workspace file for your given versioning system
     pass
 
+"""
+    Executes PHP command and returns the output
+"""
+def php(cmd, show_echo):
+    return shell_exec("/usr/bin/env php -r '" + cmd + ";'", show_echo)
+
 #
 # ---------------------------------------------------------------------------------------------------------
 # End functions
