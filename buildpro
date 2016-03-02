@@ -1,0 +1,2 @@
+#!/bin/bash
+/bin/env python $BUILDPRO_HOME/src/buildpro.py $*

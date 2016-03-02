@@ -15,6 +15,31 @@
 # http://pyyaml.org/wiki/PyYAMLDocumentation
 #
 
+#
+# *************************************************************************
+#
+#  Title:       buildpro.py
+#
+#  Created on:  24.10.2015 at 08:59:46
+#  Email:       ovidiugabriel@gmail.com
+#  Copyright:   (C) 2016 ICE Control srl. All Rights Reserved.
+#
+#  $Id$
+#
+# *************************************************************************
+#
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# History (Start).
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#
+# Date         Name    Reason
+# -------------------------------------------------------------------------
+# 02.03.2016           Small final_cmd changes
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# History (END).
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
 import sys
 import os
 import subprocess
@@ -110,7 +135,7 @@ def proto():
 
     outfd.close()
 
-""" 
+"""
     https://sublime-text-unofficial-documentation.readthedocs.org/en/latest/file_management/file_management.html\
     #the-sublime-project-format
 """
@@ -123,8 +148,8 @@ def sublime_project():
         indent=4, separators=(',', ': ') ))
 
 
-""" 
-    Unlike .sublime-project files, .sublime-workspace files are not meant to be shared or edited manually. 
+"""
+    Unlike .sublime-project files, .sublime-workspace files are not meant to be shared or edited manually.
     You should never commit .sublime-workspace files into a source code repository.
 """
 def sublime_workspace():
@@ -148,8 +173,8 @@ if 1 == len(sys.argv):
     buildpro_exit(1)
 
 # Some 'contants' definitions
-BOLD  = shell_exec('tput bold', False)
-RESET = shell_exec('tput sgr0', False)
+BOLD="\033[1m"
+RESET="\033[0m"
 
 env = os.environ
 
@@ -181,9 +206,9 @@ if data == None:
 # The `final_cmd` may be used to run the compiler directly but also to generate Tupfile
 
 # FIXME: As it is implemented now, it works only with GCC.
-final_cmd = 'gcc'
+final_cmd = ['gcc']
 if 'var' in data and 'CC' in data['var'] and data['var']['CC'] != None:
-    final_cmd = data['var']['CC']   # maybe cc is not an inspired name
+    final_cmd[0] = data['var']['CC']   # maybe cc is not an inspired name
 
 # http://scribu.net/blog/python-equivalents-to-phps-foreach.html
 
@@ -204,39 +229,26 @@ if 'includes' in data:
             buildpro_exit(1)
 
 defines = {}
-# defines['False'] = '0'
-# defines['True']  = '1'
 
 if len(defines) > 0:
-    cdefs = []
     for key in defines:
-        cdefs.append('-D' + key + '=' + defines[key])
-    final_cmd += (' '.join(cdefs) + ' ')
+        final_cmd.append('-D' + key + '=' + defines[key])
 
 if 'sources' in data:
     for value in data['sources']:
-        value = value.format(**env).replace('$', '')
-        final_cmd += value + ' '
+        final_cmd.append(value.format(**env).replace('$', ''))
 
 if 'library_paths' in data:
-    libpaths = []
-
     for (key, value) in enumerate(data['library_paths']):
-        value = value.format(**env).replace('$', '')
-        # data['library_paths'][key] = value
-        libpaths.append('-L' + value)
-
-    final_cmd += (' '.join(libpaths) + ' ')
+        final_cmd.append('-L' + value.format(**env).replace('$', ''))
 
 #
 # the libs have to go after sources list
 # don't ask me why, I don't know, but the order seems to be required
 #
 if ('libraries' in data) and (data['libraries'] != None):
-    libraries = []
     for value in data['libraries']:
-        libraries.append('-l' + value)
-    final_cmd += (' '.join(libraries) + ' ')
+        final_cmd.append('-l' + value)
 
 # append artifact name
 output = 'a.out'
@@ -248,7 +260,7 @@ else:
 
 # g flag - Produce debugging information in the operating system's native format
 # GDB can work with this debugging information.
-final_cmd += '-g -o ' + output
+final_cmd.append('-g -o ' + output)
 
 # By default the build is no-clean
 # but clean may be enforced with an environment variable
@@ -262,7 +274,7 @@ else:
     print('To clean artifacts prepend clean=1 \n')
 
 buildpro_print('Building ...')
-final_cmd_result = shell_exec(final_cmd + ' > buildpro.log 2>&1 ; echo $?', True)
+final_cmd_result = shell_exec(' '.join(final_cmd) + ' > buildpro.log 2>&1 ; echo $?', True)
 
 print(shell_exec('cat buildpro.log', False))
 if "0" != final_cmd_result:
