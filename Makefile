@@ -18,4 +18,4 @@ install-buildpro:
 
 test:
 	cd test
-	bash $(BUILDPRO_HOME)/buildpro buildpro_test
+	python $(BUILDPRO_HOME)/src/buildpro.py buildpro_test
