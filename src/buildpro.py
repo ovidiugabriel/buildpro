@@ -34,6 +34,7 @@
 #
 # Date         Name    Reason
 # -------------------------------------------------------------------------
+# 03.03.2016           Fixed .exe target on Windows
 # 02.03.2016           Small final_cmd changes
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # History (END).
@@ -46,6 +47,7 @@ import subprocess
 import yaml
 import re
 import json
+import platform
 
 #
 # Executes command via shell and return the complete output as a string
@@ -53,7 +55,7 @@ import json
 def shell_exec(cmd, show_echo):
     if show_echo:
         print(cmd)
-    return subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True).stdout.read().decode('utf-8').rstrip()
+    return subprocess.check_output(cmd, shell=True).decode('utf-8').rstrip()
 
 #
 # Generates the Lua Script code for the Tupfile
@@ -205,10 +207,11 @@ if data == None:
 # TODO: `final_cmd` must be formatted as specified in the .project.yml file.
 # The `final_cmd` may be used to run the compiler directly but also to generate Tupfile
 
-# FIXME: As it is implemented now, it works only with GCC.
-final_cmd = ['gcc']
-if 'var' in data and 'CC' in data['var'] and data['var']['CC'] != None:
-    final_cmd[0] = data['var']['CC']   # maybe cc is not an inspired name
+#
+# Compiler option is MANDATORY!!!
+#
+final_cmd = []
+final_cmd.append(data['compiler'])
 
 # http://scribu.net/blog/python-equivalents-to-phps-foreach.html
 
@@ -262,6 +265,10 @@ else:
 # GDB can work with this debugging information.
 final_cmd.append('-g -o ' + output)
 
+# Append .exe extension if we are on Windows system
+if 'Windows' == platform.system():
+    output += '.exe'
+
 # By default the build is no-clean
 # but clean may be enforced with an environment variable
 clean = 'clean' in env and env['clean']
@@ -274,23 +281,23 @@ else:
     print('To clean artifacts prepend clean=1 \n')
 
 buildpro_print('Building ...')
-final_cmd_result = shell_exec(' '.join(final_cmd) + ' > buildpro.log 2>&1 ; echo $?', True)
 
-print(shell_exec('cat buildpro.log', False))
-if "0" != final_cmd_result:
-
+try:
+    final_cmd_output = shell_exec(' '.join(final_cmd) + ' > buildpro.log 2>&1', True)
+    print(shell_exec('cat buildpro.log', False))
+except CalledProcessError:
     buildpro_print('Build FAILED. Bailing out.')
     buildpro_exit(1)
 
-artifact_exists = shell_exec('if [ -f ./' + output + ' ] ; then echo "1" ; fi', False)
+artifact_exists = os.path.exists(output) and os.path.isfile(output)
+if artifact_exists:
+    if 'deploy' in data:
+        for cmd in data['deploy']:
+            cmd = cmd.replace('{artifact.name}', './' + output)
+            cmd = cmd.format(**env).replace('$', '')
 
-if "1" == artifact_exists:
-    for cmd in data['deploy']:
-        cmd = cmd.replace('{artifact.name}', './' + output)
-        cmd = cmd.format(**env).replace('$', '')
-
-        buildpro_print('Deploying ...')
-        print(shell_exec(cmd, True))
+            buildpro_print('Deploying ...')
+            print(shell_exec(cmd, True))
 else:
     print(output + ' does not exists.')
     buildpro_exit(1)

@@ -3,7 +3,7 @@
 # To start build run:
 #   ./buildpro.py buildpro_test
 
-compiler: g++
+compiler: gcc
 
 sources:
   - buildpro_test.cc
