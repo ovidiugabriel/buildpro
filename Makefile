@@ -16,6 +16,8 @@ install-buildpro:
 	chmod -R u+w PyYAML-3.11
 	rmdir /s /q PyYAML-3.11
 
+setup:
+	python setup.py
 test:
 	cd test
-	python $(BUILDPRO_HOME)/src/buildpro.py buildpro_test
+	buildpro buildpro_test

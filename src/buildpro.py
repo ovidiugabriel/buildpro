@@ -87,17 +87,18 @@ def buildpro_exit(code):
 def proto():
     if len(sys.argv) < 5:
         print('Error: Invalid command line.')
-        print('Usage: -proto <lang> <class>')
+        print('Usage: -proto <lang> <class> <inputFile> <outputFile>')
         buildpro_exit(1)
 
-    lang       = sys.argv[2]
-    full_class_name = sys.argv[3]
-    pkg = sys.argv[3].split('.')
+    lang            = sys.argv[2].strip()
+    full_class_name = sys.argv[3].strip()
+    filename        = sys.argv[4].strip()
+    outfile         = sys.argv[5].strip()
 
+    pkg = sys.argv[3].strip().split('.')
     class_name = pkg.pop()
     package_name = '.'.join(pkg)
 
-    filename   = sys.argv[4]
     buildpro_print('proto ' + lang)
 
     # Read all @proto annotations
@@ -123,8 +124,6 @@ def proto():
 
                 proto = m.group(3)
                 functions.append(static + visibility + 'function ' + proto)
-
-    outfile = sys.argv[5]
 
     outfd = open(outfile, 'w')
 
@@ -180,15 +179,15 @@ RESET="\033[0m"
 
 env = os.environ
 
-if '-proto' == sys.argv[1]:
+if '-proto' == sys.argv[1].strip():
     proto()
     buildpro_exit(0)
 
-if '-sublime-project' == sys.argv[1]:
+if '-sublime-project' == sys.argv[1].strip():
     sublime_project()
     buildpro_exit(0)
 
-if '-sublime-workspace' == sys.argv[1]:
+if '-sublime-workspace' == sys.argv[1].strip():
     sublime_workspace()
     buildpro_exit(0)
 
@@ -196,7 +195,7 @@ if '-sublime-workspace' == sys.argv[1]:
 # Continue for non-proto usage
 #
 
-project_file = sys.argv[1] + '.project.yml'
+project_file = sys.argv[1].strip() + '.project.yml'
 stream = file(project_file, 'r')
 data = yaml.load(stream)
 
@@ -274,8 +273,8 @@ if 'Windows' == platform.system():
 clean = 'clean' in env and env['clean']
 if clean:
     buildpro_print('Removing old artifact(s) ...')
-    rmscript = 'if [ -f ./' + output + ' ] ; then rm ./' + output + ' ; fi'
-    print(shell_exec(rmscript, True))
+    print('- ' + output)
+    os.remove(output);
 else:
     buildpro_print('"No clean" build')
     print('To clean artifacts prepend clean=1 \n')
@@ -289,8 +288,10 @@ except CalledProcessError:
     buildpro_print('Build FAILED. Bailing out.')
     buildpro_exit(1)
 
+buildpro_print('Checking artifacts ...')
 artifact_exists = os.path.exists(output) and os.path.isfile(output)
 if artifact_exists:
+    print(output + ' was created')
     if 'deploy' in data:
         for cmd in data['deploy']:
             cmd = cmd.replace('{artifact.name}', './' + output)
