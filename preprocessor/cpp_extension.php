@@ -2,7 +2,7 @@
 
 /* ************************************************************************* */
 /*                                                                           */
-/*  Title:       cpp_extension.php.php                                       */
+/*  Title:       cpp_extension.php                                           */
 /*                                                                           */
 /*  Created on:  02.06.2013 at 12:35:09                                      */
 /*  Email:       ovidiugabriel@gmail.com                                     */
@@ -53,8 +53,14 @@
 /* USER DEFINED CONSTANTS                                                    */
 /*                                                                           */
 
+/**
+ *
+ */
 define ('DIRECTIVE_PREFIX', '(#|\%:)');
 
+/**
+ *
+ */
 define ('DEFAULT_PHP_LIBRARY', 'default.lib.php');
 
 /*                                                                           */
@@ -62,6 +68,8 @@ define ('DEFAULT_PHP_LIBRARY', 'default.lib.php');
 /*                                                                           */
 
 /**
+ * Writes a new PHP line to the given file.
+ *
  * @param resource $fp
  * @param integer $n_tabs
  * @param string $text
@@ -72,22 +80,28 @@ function out($fp, $n_tabs, $text) {
 }
 
 /**
+ * Returns a given number of tabs.
+ *
  * @param integer $size
  * @return string
  */
 function tab($size) {
     $result = '';
     for ($i = 0; $i < $size; $i++) {
-        $result .= "    ";
+        $result .= "    ";  // a tab is 4 spaces
     }
     return $result;
 }
 
 /**
+ * Emits a preprocessing error.
+ *
  * @param integer $n_tabs
  * @param string $text
  * @param string $detail
  * @return void
+ * @global  $INPUT
+ * @global  $LINE_NUMBER
  */
 function error($n_tabs, $text, $detail = null) {
     global $INPUT, $LINE_NUMBER;
@@ -95,6 +109,11 @@ function error($n_tabs, $text, $detail = null) {
     echo "|\n";
     echo "| *** Compiler error: \n";
     echo "|\n";
+
+    //
+    // C++ specific error.
+    //
+
     echo tab($n_tabs) . "#line {$LINE_NUMBER} \"{$INPUT}\" \n";
     if (null == $detail) {
         echo tab($n_tabs) . "#error \"Fatal error: Uncaught exception 'Exception' with message '{$text}'\"\n";
