@@ -5,3 +5,6 @@
 # The GNU system was developed to be 100% free software, free in the sense that it respects the user's freedom.
 #
 # https://gcc.gnu.org/
+
+class compiler_gcc(compiler_base):
+    pass
