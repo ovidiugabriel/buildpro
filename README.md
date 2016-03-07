@@ -81,8 +81,6 @@ The file `<project_name>.project.yml` is an [YAML](http://www.yaml.org/spec/1.2/
 compiler: gcc
 
 defines:
-  False: 0
-  True: 1
   NULL_PTR: 0
 
 includes: # in qmake it is called INCLUDEPATH
