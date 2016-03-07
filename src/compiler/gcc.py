@@ -7,4 +7,11 @@
 # https://gcc.gnu.org/
 
 class compiler_gcc(compiler_base):
-    pass
+    def __init__(self):
+        self.compiler = 'gcc'
+        self.final_cmd = []
+
+    def get_command(self):
+        self.final_cmd.append(self.compiler)
+        return ' '.join(self.final_cmd)
+
