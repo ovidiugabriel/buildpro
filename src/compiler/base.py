@@ -1,5 +1,9 @@
 
 class compiler_base:
+    LOG_TYPE_BOTH   = 0
+    LOG_TYPE_STDOUT = 1
+    LOG_TYPE_STDERR = 2
+
     def __init__(self):
         self.include_paths = []
         self.defines = []
