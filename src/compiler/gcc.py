@@ -6,12 +6,36 @@
 #
 # https://gcc.gnu.org/
 
+import os
+
 class compiler_gcc(compiler_base):
     def __init__(self):
         self.compiler = 'gcc'
         self.final_cmd = []
 
+    def append_include_path(self, value):
+        compiler_base.append_include_path(self, '-I'+value)
+
+    def append_define(self, key, value):
+        self.defines.append('-D' + key + '=' + value)
+
+    def append_library_path(self, value):
+        compiler_base.append_library_path('-L'+value)
+
+    def append_library(self, value):
+        compiler_base.append_library('-l'+value)
+
     def get_command(self):
         self.final_cmd.append(self.compiler)
-        return ' '.join(self.final_cmd)
+        self.final_cmd.append(' '.join(self.include_paths))
+        self.final_cmd.append(' '.join(self.defines))
+        self.final_cmd.append(' '.join(self.sources))
+        self.final_cmd.append(' '.join(self.library_paths))
+        self.final_cmd.append(' '.join(self.libraries))
+        
+        # Append .exe extension if we are on Windows system
+        if 'Windows' == platform.system():
+            self.output += '.exe'
+        self.final_cmd.append('-o ' + self.output)
+        return (' '.join(self.final_cmd) + ' > '+self.logfile[compiler_base.LOG_TYPE_BOTH]+' 2>&1')
 
