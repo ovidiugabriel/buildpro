@@ -12,8 +12,8 @@ class compiler_base:
     def append_include_path(self, value):
         self.include_paths.append(value)
 
-    def append_define(self, key, value):
-        self.defines.append([key, value])
+    def append_define(self, value):
+        self.defines.append({'key':key, 'value':value})
 
     def append_source(self, value):
         self.sources.append(value)
