@@ -77,6 +77,9 @@ The file `<project_name>.project.yml` is an [YAML](http://www.yaml.org/spec/1.2/
 * `invariant` :
 
 ```yaml
+
+compiler: gcc
+
 defines:
   False: 0
   True: 1
@@ -96,9 +99,6 @@ libraries:
 
 artifact:
   name: main
-
-command:
-  gcc -c {input} -o {artifact.name}
 
 ```
 Online Resources:
