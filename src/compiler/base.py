@@ -13,6 +13,13 @@ class compiler_base:
         self.output = ''
         self.logfile = ''
 
+    @staticmethod
+    def factory(compiler_name):
+        module_name   = class_name = 'compiler_' + compiler_name
+        module_object = importlib.import_module(module_name)
+        class_object  = getattr(module_object, class_name)
+        return class_object()
+
     def append_include_path(self, value):
         self.include_paths.append(value)
 
