@@ -48,6 +48,7 @@ import yaml
 import re
 import json
 import platform
+from compiler.base import compiler_base
 
 #
 # Executes command via shell and return the complete output as a string
@@ -209,8 +210,7 @@ if data == None:
 #
 # Compiler option is MANDATORY!!!
 #
-final_cmd = []
-final_cmd.append(data['compiler'])
+compiler = compiler_base.factory(data['compiler'])
 
 # http://scribu.net/blog/python-equivalents-to-phps-foreach.html
 
@@ -222,10 +222,7 @@ if 'includes' in data:
             include_paths = []
             for (key, value) in enumerate(data['includes']):
                 value = value.format(**env).replace('$', '')
-                # data['includes'][key] = value
-                include_paths.append('-I' + value)
-
-            final_cmd += (' '.join(include_paths) + ' ')
+                compiler.append_include_path(value)
         except KeyError, ex:
             print('Key Error: Undefined environment variable ${' + str(ex).strip("'") + '}')
             buildpro_exit(1)
@@ -234,15 +231,15 @@ defines = {}
 
 if len(defines) > 0:
     for key in defines:
-        final_cmd.append('-D' + key + '=' + defines[key])
+        compiler.append_define(key, defines[key])
 
 if 'sources' in data:
     for value in data['sources']:
-        final_cmd.append(value.format(**env).replace('$', ''))
+        compiler.append_source(value.format(**env).replace('$', ''))
 
 if 'library_paths' in data:
     for (key, value) in enumerate(data['library_paths']):
-        final_cmd.append('-L' + value.format(**env).replace('$', ''))
+        compiler.append_library_path(value.format(**env).replace('$', ''))
 
 #
 # the libs have to go after sources list
@@ -250,7 +247,7 @@ if 'library_paths' in data:
 #
 if ('libraries' in data) and (data['libraries'] != None):
     for value in data['libraries']:
-        final_cmd.append('-l' + value)
+        compiler.append_library(value)
 
 # append artifact name
 output = 'a.out'
@@ -260,9 +257,7 @@ else:
     if 'artefact' in data:
         output = data['artefact']['name']
 
-# g flag - Produce debugging information in the operating system's native format
-# GDB can work with this debugging information.
-final_cmd.append('-g -o ' + output)
+compiler.set_output_artifact(0, output)
 
 # Append .exe extension if we are on Windows system
 if 'Windows' == platform.system():
@@ -282,9 +277,10 @@ else:
 buildpro_print('Building ...')
 
 try:
-    final_cmd_output = shell_exec(' '.join(final_cmd) + ' > buildpro.log 2>&1', True)
+    compiler.set_logfile(compiler_base.LOG_TYPE_BOTH, 'buildpro.log')    
+    final_cmd_output = shell_exec(compiler.get_command(), True)
     print(shell_exec('cat buildpro.log', False))
-except CalledProcessError:
+except subprocess.CalledProcessError:
     buildpro_print('Build FAILED. Bailing out.')
     buildpro_exit(1)
 
