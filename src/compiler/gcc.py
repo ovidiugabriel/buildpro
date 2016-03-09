@@ -7,9 +7,12 @@
 # https://gcc.gnu.org/
 
 import os
+import platform
+from compiler.base import compiler_base
 
 class compiler_gcc(compiler_base):
     def __init__(self):
+        compiler_base.__init__(self)        
         self.compiler = 'gcc'
         self.final_cmd = []
 
