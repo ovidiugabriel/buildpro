@@ -11,13 +11,12 @@ class compiler_base:
         self.library_paths = []
         self.libraries = []
         self.output = ''
-        self.logfile = ''
+        self.logfile = ['', '', '']
 
     @staticmethod
     def factory(compiler_name):
-        module_name   = class_name = 'compiler_' + compiler_name
-        module_object = importlib.import_module(module_name)
-        class_object  = getattr(module_object, class_name)
+        module_object = importlib.import_module('compiler.'+compiler_name)
+        class_object  = getattr(module_object, 'compiler_' + compiler_name)
         return class_object()
 
     def append_include_path(self, value):
