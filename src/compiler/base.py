@@ -1,4 +1,6 @@
 
+import importlib
+
 class compiler_base:
     LOG_TYPE_BOTH   = 0
     LOG_TYPE_STDOUT = 1
