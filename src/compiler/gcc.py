@@ -1,7 +1,7 @@
 #
-# The GNU Compiler Collection includes front ends for C, C++, Objective-C, Fortran, Java, Ada, and Go, 
+# The GNU Compiler Collection includes front ends for C, C++, Objective-C, Fortran, Java, Ada, and Go,
 # as well as libraries for these languages (libstdc++, libgcj,...).
-# GCC was originally written as the compiler for the GNU operating system. 
+# GCC was originally written as the compiler for the GNU operating system.
 # The GNU system was developed to be 100% free software, free in the sense that it respects the user's freedom.
 #
 # https://gcc.gnu.org/
@@ -12,7 +12,7 @@ from compiler.base import compiler_base
 
 class compiler_gcc(compiler_base):
     def __init__(self):
-        compiler_base.__init__(self)        
+        compiler_base.__init__(self)
         self.compiler = 'gcc'
         self.final_cmd = []
 
@@ -35,7 +35,7 @@ class compiler_gcc(compiler_base):
         self.final_cmd.append(' '.join(self.sources))
         self.final_cmd.append(' '.join(self.library_paths))
         self.final_cmd.append(' '.join(self.libraries))
-        
+
         # Append .exe extension if we are on Windows system
         if 'Windows' == platform.system():
             self.output += '.exe'

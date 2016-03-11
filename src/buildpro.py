@@ -219,7 +219,6 @@ if 'includes' in data:
     if data['includes'] != None:
         # https://wiki.python.org/moin/HandlingExceptions
         try:
-            include_paths = []
             for (key, value) in enumerate(data['includes']):
                 value = value.format(**env).replace('$', '')
                 compiler.append_include_path(value)
@@ -277,7 +276,7 @@ else:
 buildpro_print('Building ...')
 
 try:
-    compiler.set_logfile(compiler_base.LOG_TYPE_BOTH, 'buildpro.log')    
+    compiler.set_logfile(compiler_base.LOG_TYPE_BOTH, 'buildpro.log')
     final_cmd_output = shell_exec(compiler.get_command(), True)
     print(shell_exec('cat buildpro.log', False))
 except subprocess.CalledProcessError:
