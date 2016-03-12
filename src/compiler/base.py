@@ -14,6 +14,7 @@ class compiler_base:
         self.libraries = []
         self.output = ''
         self.logfile = ['', '', '']
+        self.verbose = False
 
     @staticmethod
     def factory(compiler_name):
@@ -41,3 +42,6 @@ class compiler_base:
 
     def set_logfile(self, tyipe, name):
         self.logfile[tyipe] = name
+
+    def set_verbose(self, verbose):
+        self.verbose = verbose

@@ -276,9 +276,16 @@ else:
 buildpro_print('Building ...')
 
 try:
-    compiler.set_logfile(compiler_base.LOG_TYPE_BOTH, 'buildpro.log')
+    log_file_name = 'buildpro.log'
+    compiler.set_logfile(compiler_base.LOG_TYPE_BOTH, log_file_name)
+    compiler.set_verbose(True)
     final_cmd_output = shell_exec(compiler.get_command(), True)
-    print(shell_exec('cat buildpro.log', False))
+    if os.path.exists(log_file_name):
+        buildpro_print('Printing logs ...')
+        with open(log_file_name, 'r') as log_file:
+            print(log_file.read())
+
+    # print(shell_exec('cat buildpro.log', False))
 except subprocess.CalledProcessError:
     buildpro_print('Build FAILED. Bailing out.')
     buildpro_exit(1)

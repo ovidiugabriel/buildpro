@@ -39,6 +39,8 @@ class compiler_gcc(compiler_base):
         # Append .exe extension if we are on Windows system
         if 'Windows' == platform.system():
             self.output += '.exe'
+        if self.verbose:
+            self.final_cmd.append('-v')
         self.final_cmd.append('-o ' + self.output)
         return (' '.join(self.final_cmd) + ' > '+self.logfile[compiler_base.LOG_TYPE_BOTH]+' 2>&1')
 
