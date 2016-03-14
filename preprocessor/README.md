@@ -25,3 +25,8 @@ Advanced:
 
 * `@using`
 * `{{expression}}` - expands to a php expression
+
+Links:
+
+* [GNU M4 Manual](https://www.gnu.org/software/m4/manual/m4.html)
+* [Smarty 3 Manual](http://www.smarty.net/docs/en/)
