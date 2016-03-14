@@ -11,22 +11,22 @@ Standard accepted tokens:
 * `#else`
 * `#ifdef`
 * `#ifndef`
-* `#include` - the same as `@require`
-* `#import` - the same as `@require_once`
+* `#include` - the same as `#require`
+* `#import` - the same as `#require_once`
  
 **IMPORTANT:** `#undef` and `#pragma` are not supported
 
 Other accepted tokens (provided by extension):
 
-* `@require` 
-* `@require_once`
+* `#require` 
+* `#require_once`
 
 Advanced:
 
-* `@using`
+* `#using`
 * `{{expression}}` - expands to a php expression
 
-Links:
+##### Links
 
 * [GNU M4 Manual](https://www.gnu.org/software/m4/manual/m4.html)
 * [Smarty 3 Manual](http://www.smarty.net/docs/en/)
