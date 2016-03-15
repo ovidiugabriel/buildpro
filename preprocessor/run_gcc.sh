@@ -3,8 +3,10 @@
 export INCLUDE_PATH=`pwd`/lib
 if [ "$1" != "" ] ; then
   if [ -e $1 ] ; then
-    php ./cpp_extension.php $1
-    gcc -xc output/$1.out
+    ./cpp_extension $1
+    if [ -e "output/$1.out" ] ; then
+      gcc -I./lib -xc output/$1.out
+    fi
   else
     echo "error: $1: No such file or directory"
   fi
