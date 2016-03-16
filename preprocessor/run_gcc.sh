@@ -1,14 +1,24 @@
 #!/bin/bash
 
-export INCLUDE_PATH=`pwd`/lib
+# When using Cygwin, the Windows path must be supplied
+if type "cygpath" > /dev/null ; then
+  MY_PWD=$(cygpath -w `pwd`)
+else
+  MY_PWD=`pwd`
+fi
+
+export INCLUDE_PATH=$MY_PWD/lib
 if [ "$1" != "" ] ; then
   if [ -e $1 ] ; then
+    if [ ! -e ./output ] ; then
+      mkdir output
+    fi
     if [ -e ./output/a.out ] ; then
       rm ./output/a.out
     fi
-    ./cpp_extension $1
+    php ./cpp_extension.php $1
     if [ -e "output/$1.out" ] ; then
-      gcc -I./lib -xc output/$1.out -o output/a.out
+      gcc -I./lib -Werror -xc output/$1.out -o output/a.out
       if [ -e ./output/a.out ] ; then
         ./output/a.out
       fi

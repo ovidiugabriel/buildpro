@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 
 /* ************************************************************************* */
@@ -18,6 +19,7 @@
 /*                                                                           */
 /* Date         Name    Reason                                               */
 /* ------------------------------------------------------------------------- */
+/* 16.03.2016           Added token aware define replacement                 */
 /* 13.12.2015           Added digraph prefix                                 */
 /* 12.12.2015           Added output buffering and error reporintg line sync */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -29,6 +31,9 @@
 // C++ preprocessor replacement
 
 /*
+ * -----------------------------------------------------------------------------
+ * Replacements for standard accepted tokens
+ * -----------------------------------------------------------------------------
  * #define
  * #if
  * #elif
@@ -36,9 +41,13 @@
  * #endif
  * #ifdef
  * #ifndef
- * #include     @require
- * #import      @require_once
- *
+ * #include
+ * -----------------------------------------------------------------------------
+ * Extensions
+ * -----------------------------------------------------------------------------
+ * @include_once
+ * @import
+ * @require_once
  * @require
  * @require_once
  * -----------------------------------------------------------------------------
@@ -48,13 +57,17 @@
  * #pragma
  */
 
+/*                                                                           */
+/* USER DEFINED INCLUDES                                                     */
+/*                                                                           */
+
 
 /*                                                                           */
 /* USER DEFINED CONSTANTS                                                    */
 /*                                                                           */
 
 /**
- *
+ * Don't remove parenthesis as it will confuse the parser.
  */
 define ('DIRECTIVE_PREFIX', '(#|\%:)');
 
@@ -106,31 +119,55 @@ function tab($size) {
 function error($n_tabs, $text, $detail = null) {
     global $INPUT, $LINE_NUMBER;
 
-    echo "|\n";
-    echo "| *** Compiler error: \n";
-    echo "|\n";
-
     //
     // C++ specific error.
     //
-
+    echo "/* Compiler error: */\n";
     echo tab($n_tabs) . "#line {$LINE_NUMBER} \"{$INPUT}\" \n";
     if (null == $detail) {
         echo tab($n_tabs) . "#error \"Fatal error: Uncaught exception 'Exception' with message '{$text}'\"\n";
     } else {
         echo tab($n_tabs) . "#error \"{$detail}\"\n";
     }
-
     die;
+}
+
+/**
+ * @param string $line
+ * @param array $defines
+ */
+function replace_defines($line = '', array $defines) {
+    if (!$line) { return $line; }
+
+    if (false !== strpos($line, '"')) {
+        $tokens = explode('"', $line);
+        $n = count($tokens);
+        for ($i = 0; $i < $n; $i++) {
+            if (0 == ($i % 2)) {
+                $tokens[$i] = str_replace(array_keys($defines), array_values($defines), $tokens[$i]);
+            }
+        }
+        return implode('"', $tokens);
+    }
+    return str_replace(array_keys($defines), array_values($defines), $line);
 }
 
 //
 // MAIN CODE
 //
 
+
+function pp_error_handler($code, $message, $file, $line) {
+    echo "#line {$line} \"".basename($file)."\"\n";
+    echo "#error \"{$message}\"\n";
+    die;
+}
+set_error_handler('pp_error_handler');
+
+
 if (isset($argv[1]) && file_exists($argv[1])) {
     $INPUT = $argv[1];
-    $OUTPUT = 'output.php';
+    $OUTPUT = 'output/output.php';
 
     $fp = fopen($INPUT, 'r');
     if ($fp) {
@@ -138,8 +175,8 @@ if (isset($argv[1]) && file_exists($argv[1])) {
         $outfd = fopen($OUTPUT, 'w');
 
         $stack = array();
-        if (getenv('INCLUDE_PATH')) {
-            out ($outfd, 0, "ini_set('include_path', ini_get('include_path') . ';'. getenv('INCLUDE_PATH'))");
+        if ($INCLUDE_PATH = getenv('INCLUDE_PATH')) {
+            out ($outfd, 0, "ini_set('include_path', ini_get('include_path') . '" . PATH_SEPARATOR . $INCLUDE_PATH . "')");
         }
         if (defined('DEFAULT_PHP_LIBRARY') && DEFAULT_PHP_LIBRARY) {
             out ($outfd, 0, "include '" . DEFAULT_PHP_LIBRARY . "'");
@@ -151,6 +188,8 @@ if (isset($argv[1]) && file_exists($argv[1])) {
         $LINE_NUMBER = 0;
 
         $T_DIR = DIRECTIVE_PREFIX;          // Directive prefix token
+
+        $defines = array();
 
         while ($line = fgets($fp)) {
             $LINE_NUMBER++;
@@ -173,6 +212,7 @@ if (isset($argv[1]) && file_exists($argv[1])) {
 
             if (preg_match("/{$T_DIR}define\s+([^\s]+)\s*(.*)/", $line, $matches)) {
                 out($outfd,  count($stack), "define('$matches[2]', '$matches[3]')");
+                $defines[$matches[2]] = "<?php echo {$matches[2]} ?>";
 
             } elseif (preg_match("/{$T_DIR}if\s+(.*)/", $line, $matches)) {
                 $last_id = uniqid();
@@ -211,7 +251,7 @@ if (isset($argv[1]) && file_exists($argv[1])) {
                 error(count($stack), 'pragma');
 
             } elseif (preg_match("/{$T_DIR}error\s*(.*)/", $line, $matches)) {
-                error(count($stack), 'error', $matches[2]);
+                error(count($stack), 'error', trim($matches[1], '"'));
 
             }
 
@@ -219,35 +259,37 @@ if (isset($argv[1]) && file_exists($argv[1])) {
             // Extensions (not provided by the C++ preprocessor)
             //
 
-            elseif (preg_match('/\%:require\s+([^;]+)/', $line, $matches)) {
+            elseif (preg_match('/@require\s+([^;]+);/', $line, $matches)) {
                 $file = trim($matches[1], '<">');
                 out($outfd, count($stack), "require '$file'");
 
-            } elseif (preg_match("/{$T_DIR}import\s+(.*)/", $line, $matches)) {
+            } elseif (preg_match("/@import\s+([^;]+);/", $line, $matches)) {
+                $file = str_replace('.', '/', trim($matches[1], '<">'));
+                out($outfd, count($stack), "require_once '$file'");
+
+            } elseif (preg_match('/@require_once\s+([^;]+);/', $line, $matches)) {
                 $file = trim($matches[1], '<">');
                 out($outfd, count($stack), "require_once '$file'");
 
-            } elseif (preg_match('/\%:require_once\s+([^;]+)/', $line, $matches)) {
-                $file = trim($matches[1], '<">');
-                out($outfd, count($stack), "require_once '$file'");
-
-
-            } elseif (preg_match('/\%:using\s+([^;]+)/', $line, $matches)) {
+            } /* elseif (preg_match('/@using\s+([^;]+)/', $line, $matches)) {
                 out($outfd, count($stack), "_using('$matches[1]')");
 
-            } elseif (preg_match('/\%:config_load\s+([^;]+)/', $line, $matches)) {
+            } */
+            /* elseif (preg_match('/\%:config_load\s+([^;]+)/', $line, $matches)) {
                 out($outfd, count($stack), "_config_load('$matches[1]')");
 
-            } elseif (preg_match_all('/\{\{([^\}]+)\}\}/', $line, $matches)) {
+            } */
+            elseif (preg_match_all('/\{\{([^\}]+)\}\}/', $line, $matches)) {
                 // Expand to print a PHP expression
                 fwrite($outfd, preg_replace('/\{\{([^\}]+)\}\}/', '<?php echo $1 ?>', $line));
 
             } else {
-                fwrite($outfd, "$line\n");
+                fwrite($outfd, "#line {$LINE_NUMBER} \"{$INPUT}\" \n");
+                fwrite($outfd, replace_defines($line, $defines)."\n");
             }
         }
 
-        out ($outfd, 0, "file_put_contents('{$INPUT}.out', ob_get_clean())");
+        out ($outfd, 0, "file_put_contents('output/{$INPUT}.out', ob_get_clean())");
 
         fclose($outfd);
         fclose($fp);
@@ -259,18 +301,10 @@ if (isset($argv[1]) && file_exists($argv[1])) {
         // TODO: output.php will generate output into a file
         // and print errors to stderr.
 
-
-        if (file_exists("{$INPUT}.out")) {
-            unlink("{$INPUT}.out");
+        if (file_exists($file = "output/{$INPUT}.out")) {
+            unlink($file);
         }
         echo shell_exec("php {$OUTPUT}");
-
-        if (file_exists("{$INPUT}.out")) {
-            echo "File contents: \n";
-            echo "-----------------\n";
-            echo trim(file_get_contents("{$INPUT}.out")) . "\n";
-            echo "\n";
-        }
 
         //
         // END TESTCODE

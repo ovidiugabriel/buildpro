@@ -42,8 +42,14 @@ function error_handler($code, $message, $file, $line) {
     //
     echo "/* Compiler error: */\n";
     echo "#line {$LINE_NUMBER} \"{$INPUT}\" \n";
-    echo "#error \"{$message}\"\n";
 
+    //
+    // Show the include_path for efficient debug in case of require_* or include_* fails
+    //
+    if ( (2 == $code) && preg_match('/^(require|include)/', $message) ) {
+        $message .= "\ninclude_path=" . ini_get('include_path');
+    }
+    echo "#error \"{$message}\"\n";
     die;
 }
 
