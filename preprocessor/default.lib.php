@@ -18,7 +18,7 @@
 /*                                                                           */
 /* Date         Name    Reason                                               */
 /* ------------------------------------------------------------------------- */
-/*                                                                           */
+/* 16.03.2016           Added include_path hint in error message             */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* History (END).                                                            */
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
@@ -47,7 +47,7 @@ function error_handler($code, $message, $file, $line) {
     // Show the include_path for efficient debug in case of require_* or include_* fails
     //
     if ( (2 == $code) && preg_match('/^(require|include)/', $message) ) {
-        $message .= "\ninclude_path=" . ini_get('include_path');
+        $message .= "; include_path=" . ini_get('include_path');
     }
     echo "#error \"{$message}\"\n";
     die;

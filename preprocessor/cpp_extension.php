@@ -116,20 +116,15 @@ function tab($size) {
  * @global  $INPUT
  * @global  $LINE_NUMBER
  */
-function error($n_tabs, $text, $detail = null) {
+function error($n_tabs, $text) {
     global $INPUT, $LINE_NUMBER;
+    global $outfd;
 
     //
     // C++ specific error.
     //
-    echo "/* Compiler error: */\n";
-    echo tab($n_tabs) . "#line {$LINE_NUMBER} \"{$INPUT}\" \n";
-    if (null == $detail) {
-        echo tab($n_tabs) . "#error \"Fatal error: Uncaught exception 'Exception' with message '{$text}'\"\n";
-    } else {
-        echo tab($n_tabs) . "#error \"{$detail}\"\n";
-    }
-    die;
+    fwrite($outfd, tab($n_tabs) . "#line {$LINE_NUMBER} \"{$INPUT}\" \n");
+    fwrite($outfd, tab($n_tabs) . '#error '. $text . "\n");
 }
 
 /**
@@ -245,13 +240,13 @@ if (isset($argv[1]) && file_exists($argv[1])) {
                 out($outfd, count($stack), "require '$file'");
 
             } elseif (preg_match("/{$T_DIR}undef\s+(.*)/", $line, $matches)) {
-                error(count($stack), 'undef');
+                error(count($stack), 'undef is not allowed here');
 
             } elseif (preg_match("/{$T_DIR}pragma\s+(.*)/", $line, $matches)) {
-                error(count($stack), 'pragma');
+                error(count($stack), 'pragma is not allowed here');
 
             } elseif (preg_match("/{$T_DIR}error\s*(.*)/", $line, $matches)) {
-                error(count($stack), 'error', trim($matches[1], '"'));
+                error(count($stack), trim($matches[2], '"'));
 
             }
 
@@ -289,25 +284,18 @@ if (isset($argv[1]) && file_exists($argv[1])) {
             }
         }
 
+        $dir = dirname("output/{$INPUT}.out");
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
         out ($outfd, 0, "file_put_contents('output/{$INPUT}.out', ob_get_clean())");
 
         fclose($outfd);
         fclose($fp);
 
-        //
-        // BEGIN TESTCODE
-        //
-
-        // TODO: output.php will generate output into a file
-        // and print errors to stderr.
-
         if (file_exists($file = "output/{$INPUT}.out")) {
             unlink($file);
         }
         echo shell_exec("php {$OUTPUT}");
-
-        //
-        // END TESTCODE
-        //
     }
 }
