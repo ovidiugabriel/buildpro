@@ -2,7 +2,7 @@
 This **C preprocessor** replacement allows you to use flexible and more powerful macros without having to rely on **m4**.
 Basicaly **PHP**+**Smarty** combination becomes your new preprocessor. You can use it for any language...
 
-Standard accepted tokens:
+###### Replacements for standard accepted tokens
 
 * `#define`
 * `#if`
@@ -11,20 +11,19 @@ Standard accepted tokens:
 * `#else`
 * `#ifdef`
 * `#ifndef`
-* `#include` - the same as `#require`
-* `#import` - the same as `#require_once`
+* `#include`
+
+###### Extensions
+
+* `@include_once`
+* `@import`
+* `@require_once`
+* `@require`
+* `@require_once`
+
+###### Not supported
  
 **IMPORTANT:** `#undef` and `#pragma` are not supported
-
-Other accepted tokens (provided by extension):
-
-* `#require` 
-* `#require_once`
-
-Advanced:
-
-* `#using`
-* `{{expression}}` - expands to a php expression
 
 ##### Links
 
