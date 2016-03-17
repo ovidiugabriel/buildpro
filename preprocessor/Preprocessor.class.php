@@ -26,13 +26,24 @@ class Preprocessor {
         fwrite($this->outfd, tab($n_tabs) . '#error '. $text . "\n");
     }
     
+    /** 
+     * @throws Exception
+     */
     public function execute() {
         $fp = fopen($this->INPUT, 'r');
-        if ($fp) {
-            $this->outfd = fopen($OUTPUT, 'w');
-
-            fclose($this->outfd);
-            fclose($fp);
+        if (!$fp) {
+            throw new Exception("Could not open file: {$this->INPUT}");
         }
+
+        $OUTPUT = 'output/output.php';
+        $this->outfd = fopen($OUTPUT, 'w');
+        if (!$this->outfd) {
+            throw new Exception("Could not open file: {$OUTPUT}");
+        }
+
+        // We have file handlers here ... continue execution
+
+        fclose($this->outfd);
+        fclose($fp);
     }
 }
