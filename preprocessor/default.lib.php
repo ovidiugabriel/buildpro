@@ -55,4 +55,62 @@ function error_handler($code, $message, $file, $line) {
 
 set_error_handler('error_handler');
 
+/** 
+ * Camelize dash or underscore.
+ * Credit to: JP Richardson (string.js) <jprichardson@gmail.com>
+ */
+function camelize($text) {
+    $parts = preg_split('/-|_/', $text);
+    $st = array_shift($parts);
+    return $st. implode('', array_map('ucfirst', $parts));
+}
+
+/** 
+ * Dasherize camel-case or studly caps.
+ * Credit to: JP Richardson (string.js) <jprichardson@gmail.com>
+ */
+function dasherize($text) {
+    $text = preg_replace('/[_\s]+/', '-', $text);
+    $text = preg_replace('/([A-Z])/', '-$1', $text);
+    $text = preg_replace('/-+/', '-', $text);
+
+    return strtolower($text);
+}
+
+/** 
+ * Underscore camel-case or studly caps.
+ * Credit to: JP Richardson (string.js) <jprichardson@gmail.com>
+ */
+function underscore($text) {
+    $st = ctype_upper(substr($text, 0, 1)) ? '_' : '';
+
+    $text = preg_replace('/([a-z\d])([A-Z]+)/', '$1_$2', $text);
+    $text = preg_replace('/([A-Z\d]+)([A-Z][a-z])/', '$1_$2', $text);
+    $text = preg_replace('/[-\s]+/', '_', $text);
+
+    return $st . strtolower($text);
+}
+
+function is_unittest() {
+    $opts = getopt('', array('unittest'));
+    return isset($opts['unittest']));
+}
+
+if (is_unittest()) {
+    assert(camelize('data_rate') == 'dataRate');
+    assert(camelize('background-color') == 'backgroundColor');
+    assert(camelize('-moz-something') == 'MozSomething');
+    assert(camelize('_car_speed_') == 'CarSpeed');
+    assert(camelize('yes_we_can') == 'yesWeCan');
+
+    assert(dasherize('dataRate') == 'data-rate');
+    assert(dasherize('CarSpeed') == '-car-speed');
+    assert(dasherize('yesWeCan') == 'yes-we-can');
+    assert(dasherize('backgroundColor') == 'background-color');
+
+    assert(underscore('dataRate') == 'data_rate');
+    assert(underscore('CarSpeed') == '_car_speed');
+    assert(underscore('yesWeCan') == 'yes_we_can');
+}
+
 // EOF
