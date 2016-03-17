@@ -6,8 +6,9 @@ class Preprocessor {
     private $outfd;
     private $stack = array();
 
-    public function __construct($INPUT) {
+    public function __construct($INPUT, $outfd = null) {
         $this->INPUT = trim($INPUT, ".\\/");
+        $this->outfd = $outfd;
     }
 
     /**
@@ -45,5 +46,9 @@ class Preprocessor {
 
         fclose($this->outfd);
         fclose($fp);
+    }
+    
+    public function set_line_number($LINE_NUMBER) {
+        $this->LINE_NUMBER = (int) $LINE_NUMBER;
     }
 }
