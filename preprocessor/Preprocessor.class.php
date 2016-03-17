@@ -4,9 +4,10 @@ class Preprocessor {
     private $INPUT;
     private $LINE_NUMBER;
     private $outfd;
+    private $stack = array();
 
     public function __construct($INPUT) {
-        $this->INPUT = $INPUT;
+        $this->INPUT = trim($INPUT, ".\\/");
     }
 
     /**
@@ -26,5 +27,12 @@ class Preprocessor {
     }
     
     public function execute() {
+        $fp = fopen($this->INPUT, 'r');
+        if ($fp) {
+            $this->outfd = fopen($OUTPUT, 'w');
+
+            fclose($this->outfd);
+            fclose($fp);
+        }
     }
 }
