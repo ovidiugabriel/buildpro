@@ -157,9 +157,24 @@ function pp_error_handler($code, $message, $file, $line) {
 set_error_handler('pp_error_handler');
 
 
-if (isset($argv[1]) && file_exists($argv[1])) {
+if (1 == $argc) {
+    echo "Usage: \n";
+    echo "    php $argv[0] [options] <file> \n";
+    die;
+}
+
+$opts = getopt('o:');
+
+$final_output = null;
+if (isset($opts['o'])) {
+    $final_output = $opts['o'];
+    $INPUT = $argv[3];
+} else {
     $INPUT = $argv[1];
-    $OUTPUT = 'output/output.php';
+}
+
+if (file_exists($INPUT)) {
+    $OUTPUT = 'output/'.sha1(uniqid()).'.php';
 
     $fp = fopen($INPUT, 'r');
     if ($fp) {
@@ -283,23 +298,24 @@ if (isset($argv[1]) && file_exists($argv[1])) {
                 fwrite($outfd, preg_replace('/\{\{([^\}]+)\}\}/', '<?php echo $1 ?>', $line));
 
             } else {
-                fwrite($outfd, "#line {$LINE_NUMBER} \"{$INPUT}\" \n");
+                fwrite($outfd, "#line {$LINE_NUMBER} \"{$INPUT}\"\n");
                 fwrite($outfd, replace_defines($line, $defines)."\n");
             }
         }
 
-        $dir = dirname("output/{$INPUT}.out");
-        if (!file_exists($dir)) {
-            mkdir($dir, 0777, true);
+        if ($final_output) {
+            $dir = dirname($final_output);
+            if (!file_exists($dir)) {
+                mkdir($dir, 0777, true);
+            }
+
+            out ($outfd, 0, "file_put_contents('$final_output', ob_get_clean())");
         }
-        out ($outfd, 0, "file_put_contents('output/{$INPUT}.out', ob_get_clean())");
 
         fclose($outfd);
         fclose($fp);
 
-        if (file_exists($file = "output/{$INPUT}.out")) {
-            unlink($file);
-        }
         echo shell_exec("php {$OUTPUT}");
+        unlink($OUTPUT);
     }
 }
