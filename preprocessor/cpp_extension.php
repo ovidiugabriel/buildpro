@@ -19,6 +19,7 @@
 /*                                                                           */
 /* Date         Name    Reason                                               */
 /* ------------------------------------------------------------------------- */
+/* 19.03.2016           Added @lang support                                  */
 /* 16.03.2016           Added token aware define replacement                 */
 /* 13.12.2015           Added digraph prefix                                 */
 /* 12.12.2015           Added output buffering and error reporintg line sync */
@@ -50,6 +51,7 @@
  * @require_once
  * @require
  * @require_once
+ * @lang - specify the "language" extension to be used for preprocessing
  * -----------------------------------------------------------------------------
  * Not supported.
  * -----------------------------------------------------------------------------
@@ -70,11 +72,6 @@
  * Don't remove parenthesis as it will confuse the parser.
  */
 define ('DIRECTIVE_PREFIX', '(#|\%:)');
-
-/**
- *
- */
-define ('DEFAULT_PHP_LIBRARY', 'default.lib.php');
 
 /*                                                                           */
 /* --- PUBLIC OPERATIONS (GLOBAL FUNCTIONS) ---                              */
@@ -173,16 +170,14 @@ if (isset($argv[1]) && file_exists($argv[1])) {
         if ($INCLUDE_PATH = getenv('INCLUDE_PATH')) {
             out ($outfd, 0, "ini_set('include_path', ini_get('include_path') . '" . PATH_SEPARATOR . $INCLUDE_PATH . "')");
         }
-        if (defined('DEFAULT_PHP_LIBRARY') && DEFAULT_PHP_LIBRARY) {
-            out ($outfd, 0, "include '" . DEFAULT_PHP_LIBRARY . "'");
-        }
 
         out ($outfd, 0, '$INPUT = "'.trim($INPUT, '.\\/').'"');
         out ($outfd, 0, "ob_start()");
 
         $LINE_NUMBER = 0;
 
-        $T_DIR = DIRECTIVE_PREFIX;          // Directive prefix token
+        $T_DIR = '^\s*' . DIRECTIVE_PREFIX;          // Directive prefix token
+        $T_EXT = '^\s*@';
 
         $defines = array();
 
@@ -254,19 +249,28 @@ if (isset($argv[1]) && file_exists($argv[1])) {
             // Extensions (not provided by the C++ preprocessor)
             //
 
-            elseif (preg_match('/@require\s+([^;]+);/', $line, $matches)) {
+            elseif (preg_match("/{$T_EXT}require\s+([^;]+);/", $line, $matches)) {
                 $file = trim($matches[1], '<">');
                 out($outfd, count($stack), "require '$file'");
 
-            } elseif (preg_match("/@import\s+([^;]+);/", $line, $matches)) {
+            } elseif (preg_match("/{$T_EXT}import\s+([^;]+);/", $line, $matches)) {
                 $file = str_replace('.', '/', trim($matches[1], '<">'));
                 out($outfd, count($stack), "require_once '$file'");
 
-            } elseif (preg_match('/@require_once\s+([^;]+);/', $line, $matches)) {
+            } elseif (preg_match("/{$T_EXT}require_once\s+([^;]+);/", $line, $matches)) {
                 $file = trim($matches[1], '<">');
                 out($outfd, count($stack), "require_once '$file'");
 
-            } /* elseif (preg_match('/@using\s+([^;]+)/', $line, $matches)) {
+            } elseif (preg_match("/{$T_EXT}lang\s*\(?[\"\']?([A-Za-z_][A-Za-z0-9_]+)[\"\']?\)?;?/", $line, $matches)) {
+                $lang = $matches[1];
+                out ($outfd, 0, "include '{$lang}.lang.php'");
+
+            } elseif (preg_match("/{$T_EXT}headerCode\(\"(.*)\"\)/", $line, $matches)) {
+                fwrite($outfd, $matches[1] . "\n");
+
+            }
+
+             /* elseif (preg_match('/@using\s+([^;]+)/', $line, $matches)) {
                 out($outfd, count($stack), "_using('$matches[1]')");
 
             } */

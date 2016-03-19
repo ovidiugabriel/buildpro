@@ -1,4 +1,6 @@
 
+@lang "default"
+
 @import std.stdio;
 
 #define TEST 1

@@ -55,7 +55,7 @@ function error_handler($code, $message, $file, $line) {
 
 set_error_handler('error_handler');
 
-/** 
+/**
  * Camelize dash or underscore.
  * Credit to: JP Richardson (string.js) <jprichardson@gmail.com>
  */
@@ -65,7 +65,7 @@ function camelize($text) {
     return $st. implode('', array_map('ucfirst', $parts));
 }
 
-/** 
+/**
  * Dasherize camel-case or studly caps.
  * Credit to: JP Richardson (string.js) <jprichardson@gmail.com>
  */
@@ -77,7 +77,7 @@ function dasherize($text) {
     return strtolower($text);
 }
 
-/** 
+/**
  * Underscore camel-case or studly caps.
  * Credit to: JP Richardson (string.js) <jprichardson@gmail.com>
  */
@@ -93,7 +93,7 @@ function underscore($text) {
 
 function is_unittest() {
     $opts = getopt('', array('unittest'));
-    return isset($opts['unittest']));
+    return isset($opts['unittest']);
 }
 
 if (is_unittest()) {
