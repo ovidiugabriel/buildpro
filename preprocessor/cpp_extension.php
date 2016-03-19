@@ -19,6 +19,7 @@
 /*                                                                           */
 /* Date         Name    Reason                                               */
 /* ------------------------------------------------------------------------- */
+/* 19.03.2016           Added recursive imports                              */
 /* 19.03.2016           Added @lang support                                  */
 /* 16.03.2016           Added token aware define replacement                 */
 /* 13.12.2015           Added digraph prefix                                 */
@@ -52,6 +53,7 @@
  * @require
  * @require_once
  * @lang - specify the "language" extension to be used for preprocessing
+ * @headerCode - writes the given string into the output file
  * -----------------------------------------------------------------------------
  * Not supported.
  * -----------------------------------------------------------------------------
@@ -270,7 +272,9 @@ if (file_exists($INPUT)) {
 
             } elseif (preg_match("/{$T_EXT}import\s+([^;]+);/", $line, $matches)) {
                 $file = str_replace('.', '/', trim($matches[1], '<">'));
-                out($outfd, count($stack), "require_once '$file'");
+                $child = shell_exec(sprintf("php %s lib/$file", basename(__FILE__)));
+
+                fwrite($outfd, $child);
 
             } elseif (preg_match("/{$T_EXT}require_once\s+([^;]+);/", $line, $matches)) {
                 $file = trim($matches[1], '<">');

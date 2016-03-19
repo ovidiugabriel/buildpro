@@ -16,7 +16,7 @@ if [ "$1" != "" ] ; then
     if [ -e ./output/a.out ] ; then
       rm ./output/a.out
     fi
-    php ./cpp_extension.php $1
+    php ./cpp_extension.php -o output/$1.out $1
     if [ -e "output/$1.out" ] ; then
       gcc -I./lib -Werror -xc output/$1.out -o output/a.out
       if [ -e ./output/a.out ] ; then
