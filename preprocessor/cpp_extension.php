@@ -122,8 +122,8 @@ function error($n_tabs, $text) {
     //
     // C++ specific error.
     //
-    fwrite($outfd, tab($n_tabs) . "#line {$LINE_NUMBER} \"{$INPUT}\" \n");
-    fwrite($outfd, tab($n_tabs) . '#error '. $text . "\n");
+    direct_write($outfd, tab($n_tabs) . "#line {$LINE_NUMBER} \"{$INPUT}\"");
+    direct_write($outfd, tab($n_tabs) . '#error '. $text);
 }
 
 /**
@@ -144,6 +144,10 @@ function replace_defines($line = '', array $defines) {
         return implode('"', $tokens);
     }
     return str_replace(array_keys($defines), array_values($defines), $line);
+}
+
+function direct_write($fp, $text) {
+    return fwrite($fp, $text . "\n");
 }
 
 //
@@ -274,7 +278,7 @@ if (file_exists($INPUT)) {
                 $file = str_replace('.', '/', trim($matches[1], '<">'));
                 $child = shell_exec(sprintf("php %s lib/$file", basename(__FILE__)));
 
-                fwrite($outfd, $child);
+                direct_write($outfd, $child);
 
             } elseif (preg_match("/{$T_EXT}require_once\s+([^;]+);/", $line, $matches)) {
                 $file = trim($matches[1], '<">');
@@ -285,7 +289,14 @@ if (file_exists($INPUT)) {
                 out ($outfd, 0, "include '{$lang}.lang.php'");
 
             } elseif (preg_match("/{$T_EXT}headerCode\(\"(.*)\"\)/", $line, $matches)) {
-                fwrite($outfd, $matches[1] . "\n");
+                direct_write($outfd, $matches[1]);
+
+            } elseif (preg_match("/{$T_EXT}helloworld/", $line, $matches)) {
+                //
+                // Making a good joke: https://dzone.com/articles/predictions-for-java-20
+                //
+                $text = preg_replace("/{$T_EXT}helloworld/", 'fprintf(stdout, "%s\n", "Hello world!")', $line);
+                direct_write($outfd, $text);
 
             }
 
@@ -299,11 +310,11 @@ if (file_exists($INPUT)) {
             } */
             elseif (preg_match_all('/\{\{([^\}]+)\}\}/', $line, $matches)) {
                 // Expand to print a PHP expression
-                fwrite($outfd, preg_replace('/\{\{([^\}]+)\}\}/', '<?php echo $1 ?>', $line));
+                direct_write($outfd, preg_replace('/\{\{([^\}]+)\}\}/', '<?php echo $1 ?>', $line));
 
             } else {
-                fwrite($outfd, "#line {$LINE_NUMBER} \"{$INPUT}\"\n");
-                fwrite($outfd, replace_defines($line, $defines)."\n");
+                direct_write($outfd, "#line {$LINE_NUMBER} \"{$INPUT}\"");
+                direct_write($outfd, replace_defines($line, $defines));
             }
         }
 
