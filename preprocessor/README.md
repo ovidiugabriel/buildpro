@@ -25,6 +25,12 @@ Basicaly **PHP**+**Smarty** combination becomes your new preprocessor. You can u
  
 **IMPORTANT:** `#undef` and `#pragma` are not supported
 
+##### Other Pragmatic Features
+ * add expression based syntax for C/C++
+ * no side effect expressions
+ * return keyword usage
+ * break keywrod usage
+
 ##### Links
 
 * [GNU M4 Manual](https://www.gnu.org/software/m4/manual/m4.html)
