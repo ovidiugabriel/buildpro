@@ -29,7 +29,8 @@ Basicaly **PHP**+**Smarty** combination becomes your new preprocessor. You can u
  * add expression based syntax for C/C++
  * no side effect expressions
  * return keyword usage
- * break keywrod usage
+ * break keyword usage
+ * goto keyword usage
 
 ##### Links
 
