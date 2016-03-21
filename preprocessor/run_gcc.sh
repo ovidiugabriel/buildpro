@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # When using Cygwin, the Windows path must be supplied
-if type "cygpath" > /dev/null ; then
+if type "cygpath" 1> /dev/null 2> /dev/null ; then
   MY_PWD=$(cygpath -w `pwd`)
 else
   MY_PWD=`pwd`
