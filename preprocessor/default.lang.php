@@ -55,6 +55,29 @@ function error_handler($code, $message, $file, $line) {
 
 set_error_handler('error_handler');
 
+//
+// Utility functions
+//
+
+/**
+ * On intermediate files:
+ *
+ *     return track_include('...filename...', __FILE__, __LINE__);
+ *
+ * On the file requesting the backtraces:
+ *
+ *      return array("debug_print_backtrace()" . called_at(__FILE__, __LINE__));
+ *
+ * @param  string $incl [description]
+ * @param  string $file [description]
+ * @param  integer $line [description]
+ * @return array
+ */
+function track_include($incl, $file, $line) {
+    $called_at = sprintf(' called at [%s:%d]', $file, (int) $line);
+    return array_merge(include $incl, array('include('.$incl.')' . $called_at));
+}
+
 /**
  * Camelize dash or underscore.
  * Credit to: JP Richardson (string.js) <jprichardson@gmail.com>
