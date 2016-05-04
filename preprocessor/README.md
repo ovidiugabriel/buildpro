@@ -36,3 +36,5 @@ Basicaly **PHP**+**Smarty** combination becomes your new preprocessor. You can u
 
 * [GNU M4 Manual](https://www.gnu.org/software/m4/manual/m4.html)
 * [Smarty 3 Manual](http://www.smarty.net/docs/en/)
+* https://github.com/marcioAlmada/yay
+* http://www.sitepoint.com/php-macros-for-fun-and-profit/
