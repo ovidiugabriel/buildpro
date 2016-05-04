@@ -38,3 +38,4 @@ Basicaly **PHP**+**Smarty** combination becomes your new preprocessor. You can u
 * [Smarty 3 Manual](http://www.smarty.net/docs/en/)
 * https://github.com/marcioAlmada/yay
 * http://www.sitepoint.com/php-macros-for-fun-and-profit/
+* http://re2c.org/
