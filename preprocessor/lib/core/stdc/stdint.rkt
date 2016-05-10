@@ -1,2 +1,2 @@
 (lang "default")
-(headerCode "#include <stdint>")
+(header-code "#include <stdint>")
