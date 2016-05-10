@@ -1,2 +1,0 @@
-@lang("default")
-@headerCode("#include <stdint.h>")
