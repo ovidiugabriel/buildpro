@@ -131,7 +131,7 @@ function error($n_tabs, $text) {
  * @param array $defines
  */
 function replace_defines($line = '', array $defines) {
-    if (!$line) { return $line; }
+    if (!$line) { return $line; }   // Here we have an empty line, nothing to replace
 
     if (false !== strpos($line, '"')) {
         $tokens = explode('"', $line);
