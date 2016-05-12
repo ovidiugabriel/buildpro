@@ -146,6 +146,11 @@ function replace_defines($line = '', array $defines) {
     return str_replace(array_keys($defines), array_values($defines), $line);
 }
 
+/** 
+ * @param resource $fp
+ * @param string $tetx
+ * @return integer
+ */
 function direct_write($fp, $text) {
     return fwrite($fp, $text . "\n");
 }
@@ -154,7 +159,13 @@ function direct_write($fp, $text) {
 // MAIN CODE
 //
 
-
+/**
+ * @param integer $code
+ * @param string $message
+ * @param string $file
+ * @param integer $line
+ * @exits - exits the current process
+ */
 function pp_error_handler($code, $message, $file, $line) {
     echo "#line {$line} \"".basename($file)."\"\n";
     echo "#error \"{$message}\"\n";
