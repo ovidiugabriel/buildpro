@@ -1,11 +1,22 @@
 <?php
 
 class Preprocessor {
+    /** @var string */
     private $INPUT;
+    
+    /** @var integer */
     private $LINE_NUMBER;
+    
+    /** @var resource */
     private $outfd;
+    
+    /** @var array */
     private $stack = array();
 
+    /** 
+     * @param string $INPUT
+     * @param resource $outfd
+     */
     public function __construct($INPUT, $outfd = null) {
         $this->INPUT = trim($INPUT, ".\\/");
         $this->outfd = $outfd;
@@ -29,6 +40,7 @@ class Preprocessor {
     
     /** 
      * @throws Exception
+     * @return void
      */
     public function execute() {
         $fp = fopen($this->INPUT, 'r');
@@ -48,6 +60,9 @@ class Preprocessor {
         fclose($fp);
     }
     
+    /** 
+     * @param integer $LINE_NUMBER
+     */
     public function set_line_number($LINE_NUMBER) {
         $this->LINE_NUMBER = (int) $LINE_NUMBER;
     }
