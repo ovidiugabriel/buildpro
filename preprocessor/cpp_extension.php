@@ -327,6 +327,10 @@ if (file_exists($INPUT)) {
                 direct_write($outfd, "#line {$LINE_NUMBER} \"{$INPUT}\"");
                 direct_write($outfd, replace_defines($line, $defines));
             }
+            
+            //
+            // End of simple syntactical replacements
+            //
         }
 
         if ($final_output) {
