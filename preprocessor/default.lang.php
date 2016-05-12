@@ -81,6 +81,9 @@ function track_include($incl, $file, $line) {
 /**
  * Camelize dash or underscore.
  * Credit to: JP Richardson (string.js) <jprichardson@gmail.com>
+ * 
+ * @param string $text
+ * @return string
  */
 function camelize($text) {
     $parts = preg_split('/-|_/', $text);
@@ -91,6 +94,9 @@ function camelize($text) {
 /**
  * Dasherize camel-case or studly caps.
  * Credit to: JP Richardson (string.js) <jprichardson@gmail.com>
+ * 
+ * @param string $text
+ * @return string
  */
 function dasherize($text) {
     $text = preg_replace('/[_\s]+/', '-', $text);
@@ -103,6 +109,9 @@ function dasherize($text) {
 /**
  * Underscore camel-case or studly caps.
  * Credit to: JP Richardson (string.js) <jprichardson@gmail.com>
+ * 
+ * @param string $text
+ * @return string
  */
 function underscore($text) {
     $st = ctype_upper(substr($text, 0, 1)) ? '_' : '';
@@ -114,10 +123,17 @@ function underscore($text) {
     return $st . strtolower($text);
 }
 
+/** 
+ * @return boolean
+ */
 function is_unittest() {
     $opts = getopt('', array('unittest'));
     return isset($opts['unittest']);
 }
+
+//
+// Unit-test:
+//
 
 if (is_unittest()) {
     assert(camelize('data_rate') == 'dataRate');
