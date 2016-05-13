@@ -7,3 +7,13 @@ First simple console script in racket...
 "hello world"
 
 ```
+
+```
+> (list (void))
+'(#<void>)
+> (cdr (list (void)))
+'()
+> null
+'()
+
+```
