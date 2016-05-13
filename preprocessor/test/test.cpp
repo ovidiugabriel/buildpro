@@ -1,5 +1,5 @@
 
-@lang "default"
+@(lang "default")
 
 @import std.stdio;
 
