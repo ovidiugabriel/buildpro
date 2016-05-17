@@ -190,162 +190,193 @@ if (isset($opts['o'])) {
     $INPUT = $argv[1];
 }
 
-if (file_exists($INPUT)) {
-    $OUTPUT = 'output/'.sha1(uniqid()).'.php';
+if (!file_exists($INPUT)) {
+    echo "$INPUT - No such file. \n";
+    exit(1);
+}
 
-    $fp = fopen($INPUT, 'r');
-    if ($fp) {
-        $INPUT = trim($INPUT, ".\\/");
-        $outfd = fopen($OUTPUT, 'w');
+if (preg_match('/\.(.*)$/', $INPUT, $matches)) {
+    $input_type = $matches[1];
+}
 
-        $stack = array();
-        if ($INCLUDE_PATH = getenv('INCLUDE_PATH')) {
-            out ($outfd, 0, "ini_set('include_path', ini_get('include_path') . '" . PATH_SEPARATOR . $INCLUDE_PATH . "')");
-        }
+$OUTPUT = 'output/'.sha1(uniqid()).'.php';
 
-        out ($outfd, 0, '$INPUT = "'.trim($INPUT, '.\\/').'"');
-        out ($outfd, 0, "ob_start()");
+$fp = fopen($INPUT, 'r');
+if ($fp) {
+    $INPUT = trim($INPUT, ".\\/");
+    $outfd = fopen($OUTPUT, 'w');
 
-        $LINE_NUMBER = 0;
-
-        $T_DIR = '^\s*' . DIRECTIVE_PREFIX;          // Directive prefix token
-        $T_EXT = '^\s*@';
-
-        $defines = array();
-
-        while ($line = fgets($fp)) {
-            $LINE_NUMBER++;
-
-            out ($outfd, 0, '$LINE_NUMBER = ' . $LINE_NUMBER);
-
-            $line       = rtrim($line);
-            $last_id    = (count($stack) > 0) ? $stack[count($stack)-1] : '';
-
-            $comment = explode('//', $line);
-            $has_comment = count($comment)-1;
-
-            if ($has_comment) {
-                $line = array_shift($comment);
-            }
-
-            //
-            // Replacement of C++ preprocessor
-            //
-
-            if (preg_match("/{$T_DIR}define\s+([^\s]+)\s*(.*)/", $line, $matches)) {
-                out($outfd,  count($stack), "define('$matches[2]', '$matches[3]')");
-                $defines[$matches[2]] = "<?php echo {$matches[2]} ?>";
-
-            } elseif (preg_match("/{$T_DIR}if\s+(.*)/", $line, $matches)) {
-                $last_id = uniqid();
-                array_push($stack, $last_id);
-                out($outfd, count($stack)-1, "if ($matches[2]):");
-
-            } elseif (preg_match("/{$T_DIR}elif\s+(.*)/", $line, $matches)) {
-                $matches[1] = preg_replace('/defined\((.*)\)/', "defined('$1')", $matches[1]);
-                out($outfd, count($stack)-1, "elseif ($matches[2]):");
-
-            } elseif (preg_match("/{$T_DIR}endif/", $line)) {
-                out($outfd, count($stack)-1, "endif;");
-                array_pop($stack);
-
-            } elseif (preg_match("/{$T_DIR}else/", $line)) {
-                out($outfd, count($stack)-1, "else:");
-
-            } elseif (preg_match("/{$T_DIR}ifdef\s+(.*)/", $line, $matches)) {
-                $last_id = uniqid();
-                array_push($stack, $last_id);
-                out($outfd, count($stack)-1, "if (defined('$matches[2]')):");
-
-            } elseif (preg_match("/{$T_DIR}ifndef\s+(.*)/", $line, $matches)) {
-                $last_id = uniqid();
-                array_push($stack, $last_id);
-                out($outfd, count($stack)-1, "if (!defined('$matches[2]')):");
-
-            } elseif (preg_match("/{$T_DIR}include\s+(.*)/", $line, $matches)) {
-                $file = trim($matches[1], '<">');
-                out($outfd, count($stack), "require '$file'");
-
-            } elseif (preg_match("/{$T_DIR}undef\s+(.*)/", $line, $matches)) {
-                error(count($stack), 'undef is not allowed here');
-
-            } elseif (preg_match("/{$T_DIR}pragma\s+(.*)/", $line, $matches)) {
-                error(count($stack), 'pragma is not allowed here');
-
-            } elseif (preg_match("/{$T_DIR}error\s*(.*)/", $line, $matches)) {
-                error(count($stack), trim($matches[2], '"'));
-
-            }
-
-            //
-            // Extensions (not provided by the C++ preprocessor)
-            //
-
-            elseif (preg_match("/{$T_EXT}require\s+([^;]+);/", $line, $matches)) {
-                $file = trim($matches[1], '<">');
-                out($outfd, count($stack), "require '$file'");
-
-            } elseif (preg_match("/{$T_EXT}import\s+([^;]+);/", $line, $matches)) {
-                $file = str_replace('.', '/', trim($matches[1], '<">'));
-                $child = shell_exec(sprintf("php %s lib/$file", basename(__FILE__)));
-
-                direct_write($outfd, $child);
-
-            } elseif (preg_match("/{$T_EXT}require_once\s+([^;]+);/", $line, $matches)) {
-                $file = trim($matches[1], '<">');
-                out($outfd, count($stack), "require_once '$file'");
-
-            } elseif (preg_match("/{$T_EXT}lang\s*\(?[\"\']?([A-Za-z_][A-Za-z0-9_]+)[\"\']?\)?;?/", $line, $matches)) {
-                $lang = $matches[1];
-                out ($outfd, 0, "include '{$lang}.lang.php'");
-
-            } elseif (preg_match("/{$T_EXT}headerCode\(\"(.*)\"\)/", $line, $matches)) {
-                direct_write($outfd, $matches[1]);
-
-            } elseif (preg_match("/{$T_EXT}helloworld/", $line, $matches)) {
-                //
-                // Making a good joke: https://dzone.com/articles/predictions-for-java-20
-                //
-                $text = preg_replace("/{$T_EXT}helloworld/", 'fprintf(stdout, "%s\n", "Hello world!")', $line);
-                direct_write($outfd, $text);
-
-            }
-
-             /* elseif (preg_match('/@using\s+([^;]+)/', $line, $matches)) {
-                out($outfd, count($stack), "_using('$matches[1]')");
-
-            } */
-            /* elseif (preg_match('/\%:config_load\s+([^;]+)/', $line, $matches)) {
-                out($outfd, count($stack), "_config_load('$matches[1]')");
-
-            } */
-            elseif (preg_match_all('/\{\{([^\}]+)\}\}/', $line, $matches)) {
-                // Expand to print a PHP expression
-                direct_write($outfd, preg_replace('/\{\{([^\}]+)\}\}/', '<?php echo $1 ?>', $line));
-
-            } else {
-                direct_write($outfd, "#line {$LINE_NUMBER} \"{$INPUT}\"");
-                direct_write($outfd, replace_defines($line, $defines));
-            }
-            
-            //
-            // End of simple syntactical replacements
-            //
-        }
-
-        if ($final_output) {
-            $dir = dirname($final_output);
-            if (!file_exists($dir)) {
-                mkdir($dir, 0777, true);
-            }
-
-            out ($outfd, 0, "file_put_contents('$final_output', ob_get_clean())");
-        }
-
-        fclose($outfd);
-        fclose($fp);
-
-        echo shell_exec("php {$OUTPUT}");
-        unlink($OUTPUT);
+    $stack = array();
+    if ($INCLUDE_PATH = getenv('INCLUDE_PATH')) {
+        out ($outfd, 0, "ini_set('include_path', ini_get('include_path') . '" . PATH_SEPARATOR . $INCLUDE_PATH . "')");
     }
+
+    out ($outfd, 0, '$INPUT = "'.trim($INPUT, '.\\/').'"');
+    out ($outfd, 0, "ob_start()");
+
+    $LINE_NUMBER = 0;
+
+    $T_DIR = '^\s*' . DIRECTIVE_PREFIX;          // Directive prefix token
+    $T_EXT = '^\s*@';
+
+    $defines = array();
+
+    while ($line = fgets($fp)) {
+        $LINE_NUMBER++;
+
+        out ($outfd, 0, '$LINE_NUMBER = ' . $LINE_NUMBER);
+
+        $line       = rtrim($line);
+        $last_id    = (count($stack) > 0) ? $stack[count($stack)-1] : '';
+
+        if ('scrbl' == $input_type) {
+            $comment_delim = ';';
+        } else {
+            $comment_delim = '//';
+        }
+
+        $comment = explode($comment_delim, $line);
+        $has_comment = count($comment)-1;
+        if ($has_comment) {
+            $line = array_shift($comment);
+        }
+        //
+        // Replacement of C++ preprocessor
+        //
+
+        if (preg_match("/{$T_DIR}define\s+([^\s]+)\s*(.*)/", $line, $matches)) {
+            out($outfd,  count($stack), "define('$matches[2]', '$matches[3]')");
+            $defines[$matches[2]] = "<?php echo {$matches[2]} ?>";
+
+        } elseif (preg_match("/{$T_DIR}if\s+(.*)/", $line, $matches)) {
+            $last_id = uniqid();
+            array_push($stack, $last_id);
+            out($outfd, count($stack)-1, "if ($matches[2]):");
+
+        } elseif (preg_match("/{$T_DIR}elif\s+(.*)/", $line, $matches)) {
+            $matches[1] = preg_replace('/defined\((.*)\)/', "defined('$1')", $matches[1]);
+            out($outfd, count($stack)-1, "elseif ($matches[2]):");
+
+        } elseif (preg_match("/{$T_DIR}endif/", $line)) {
+            out($outfd, count($stack)-1, "endif;");
+            array_pop($stack);
+
+        } elseif (preg_match("/{$T_DIR}else/", $line)) {
+            out($outfd, count($stack)-1, "else:");
+
+        } elseif (preg_match("/{$T_DIR}ifdef\s+(.*)/", $line, $matches)) {
+            $last_id = uniqid();
+            array_push($stack, $last_id);
+            out($outfd, count($stack)-1, "if (defined('$matches[2]')):");
+
+        } elseif (preg_match("/{$T_DIR}ifndef\s+(.*)/", $line, $matches)) {
+            $last_id = uniqid();
+            array_push($stack, $last_id);
+            out($outfd, count($stack)-1, "if (!defined('$matches[2]')):");
+
+        } elseif (preg_match("/{$T_DIR}include\s+(.*)/", $line, $matches)) {
+            $file = trim($matches[1], '<">');
+            out($outfd, count($stack), "require '$file'");
+
+        } elseif (preg_match("/{$T_DIR}undef\s+(.*)/", $line, $matches)) {
+            error(count($stack), 'undef is not allowed here');
+
+        } elseif (preg_match("/{$T_DIR}pragma\s+(.*)/", $line, $matches)) {
+            error(count($stack), 'pragma is not allowed here');
+
+        } elseif (preg_match("/{$T_DIR}error\s*(.*)/", $line, $matches)) {
+            error(count($stack), trim($matches[2], '"'));
+
+        }
+
+        //
+        // Extensions (not provided by the C++ preprocessor)
+        //
+
+        elseif (preg_match("/{$T_EXT}require\s+([^;]+);/", $line, $matches)) {
+            $file = trim($matches[1], '<">');
+            out($outfd, count($stack), "require '$file'");
+
+        }
+
+        elseif (preg_match("/{$T_EXT}\(import\s+\"([^;]+)\"\)/", $line, $matches)) {
+            $file = str_replace('.', '/', trim($matches[1], '<">'));
+            
+            $cmd = sprintf("php %s lib/$file.scrbl", basename(__FILE__));
+            $child = shell_exec($cmd);
+
+            direct_write($outfd, $child);
+        }
+
+        elseif (preg_match("/{$T_EXT}require_once\s+([^;]+);/", $line, $matches)) {
+            $file = trim($matches[1], '<">');
+            out($outfd, count($stack), "require_once '$file'");
+
+        }
+
+        elseif (preg_match("/{$T_DIR}lang (.*)/", $line, $matches)) {
+            // Ignore pure Racket syntax
+            out ($outfd, 0, '');
+        }
+
+        // With scribble syntax
+        elseif (preg_match("/{$T_EXT}\(lang\s*\(?[\"\']?([A-Za-z_][A-Za-z0-9_]+)[\"\']?\)?\)?/", $line, $matches)) 
+        {
+            $lang = $matches[1];
+            out ($outfd, 0, "include '{$lang}.lang.php'");
+        }
+
+        elseif (preg_match("/{$T_EXT}\(header-code\s*\"(.*)\"\)/", $line, $matches)) {
+            direct_write($outfd, $matches[1]);
+
+        }
+
+        elseif (preg_match("/{$T_EXT}helloworld/", $line, $matches)) {
+            //
+            // Making a good joke: https://dzone.com/articles/predictions-for-java-20
+            //
+            $text = preg_replace("/{$T_EXT}helloworld/", 'fprintf(stdout, "%s\n", "Hello world!")', $line);
+            direct_write($outfd, $text);
+
+        }
+
+         /* elseif (preg_match('/@using\s+([^;]+)/', $line, $matches)) {
+            out($outfd, count($stack), "_using('$matches[1]')");
+
+        } */
+        /* elseif (preg_match('/\%:config_load\s+([^;]+)/', $line, $matches)) {
+            out($outfd, count($stack), "_config_load('$matches[1]')");
+
+        } */
+
+        elseif (preg_match_all('/\{\{([^\}]+)\}\}/', $line, $matches)) {
+            // Expand to print a PHP expression
+            direct_write($outfd, preg_replace('/\{\{([^\}]+)\}\}/', '<?php echo $1 ?>', $line));
+
+        }
+
+        else {
+            direct_write($outfd, "#line {$LINE_NUMBER} \"{$INPUT}\"");
+            direct_write($outfd, replace_defines($line, $defines));
+        }
+        
+        //
+        // End of simple syntactical replacements
+        //
+    }
+
+    if ($final_output) {
+        $dir = dirname($final_output);
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
+        out ($outfd, 0, "file_put_contents('$final_output', ob_get_clean())");
+    }
+
+    fclose($outfd);
+    fclose($fp);
+
+    echo shell_exec("php {$OUTPUT}");
+    unlink($OUTPUT);
 }
