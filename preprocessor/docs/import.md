@@ -1,4 +1,4 @@
-##### `import` directive #
+##### `#import` directive #
 
 * https://msdn.microsoft.com/en-us/library/8etzzkb6.aspx
 * https://msdn.microsoft.com/en-us/library/298h7faa.aspx
