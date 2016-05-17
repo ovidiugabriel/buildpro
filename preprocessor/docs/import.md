@@ -10,7 +10,7 @@
 ```
 
 ```racket
-@(import "msado15.dll" (no_namespace (rename "EOF" "EndOfFile")))
+@(import "msado15.dll" ("no_namespace" (rename "EOF" "EndOfFile")))
 ```
 ###### Example 2
 
@@ -41,5 +41,5 @@
 ```
 
 ```racket
-@(import "..\drawctl\drawctl.tlb" (no_namespace raw_interfaces_only))
+@(import "..\drawctl\drawctl.tlb" ("no_namespace" "raw_interfaces_only"))
 ```
