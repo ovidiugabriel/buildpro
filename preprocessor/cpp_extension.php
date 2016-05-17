@@ -315,13 +315,14 @@ if ($fp) {
         }
 
         elseif (preg_match("/{$T_DIR}lang (.*)/", $line, $matches)) {
-            // Ignore pure Racket syntax
+            // Ignore pure Racket syntax for lang directive
             out ($outfd, 0, '');
         }
 
-        // With scribble syntax
-        elseif (preg_match("/{$T_EXT}\(lang\s*\(?[\"\']?([A-Za-z_][A-Za-z0-9_]+)[\"\']?\)?\)?/", $line, $matches)) 
-        {
+        //
+        // lang directive, with scribble syntax
+        //
+        elseif (preg_match("/{$T_EXT}\(lang\s*\(?[\"\']?([A-Za-z_][A-Za-z0-9_]+)[\"\']?\)?\)?/", $line, $matches)) {
             $lang = $matches[1];
             out ($outfd, 0, "include '{$lang}.lang.php'");
         }
@@ -330,16 +331,12 @@ if ($fp) {
             direct_write($outfd, $matches[1]);
 
         }
-
-        elseif (preg_match("/{$T_EXT}helloworld/", $line, $matches)) {
-            //
-            // Making a good joke: https://dzone.com/articles/predictions-for-java-20
-            //
-            $text = preg_replace("/{$T_EXT}helloworld/", 'fprintf(stdout, "%s\n", "Hello world!")', $line);
-            direct_write($outfd, $text);
+/*
+        elseif (preg_match("/{$T_EXT}\(print\s*(.*)\)/", $line, $matches)) {
+            direct_write($outfd, trim($matches[1], '"'));
 
         }
-
+*/
          /* elseif (preg_match('/@using\s+([^;]+)/', $line, $matches)) {
             out($outfd, count($stack), "_using('$matches[1]')");
 
@@ -349,11 +346,13 @@ if ($fp) {
 
         } */
 
+        /*
         elseif (preg_match_all('/\{\{([^\}]+)\}\}/', $line, $matches)) {
             // Expand to print a PHP expression
             direct_write($outfd, preg_replace('/\{\{([^\}]+)\}\}/', '<?php echo $1 ?>', $line));
 
         }
+        */
 
         else {
             direct_write($outfd, "#line {$LINE_NUMBER} \"{$INPUT}\"");

@@ -34,7 +34,10 @@
 function error_handler($code, $message, $file, $line) {
     global $INPUT, $LINE_NUMBER;
 
-    ob_end_clean();
+    if (!$LINE_NUMBER) { $LINE_NUMBER = $line; }
+    if (!$INPUT) { $INPUT = $file; }
+
+    @ob_end_clean();
 
     // This is for good use only with C/C++ compiler
     // that's why is won't be a standard behavior to write this to the output file
@@ -59,6 +62,15 @@ set_error_handler('error_handler');
 // Utility functions
 //
 
+/** 
+ * @param string $file
+ * @param intger $line
+ * @return string
+ */
+function called_at($file, $line) {
+    return sprintf(' called at [%s:%d]', $file, (int) $line);
+}
+
 /**
  * On intermediate files:
  *
@@ -74,8 +86,24 @@ set_error_handler('error_handler');
  * @return array
  */
 function track_include($incl, $file, $line) {
-    $called_at = sprintf(' called at [%s:%d]', $file, (int) $line);
-    return array_merge(include $incl, array('include('.$incl.')' . $called_at));
+    $incl_result = include $incl;
+    assert(is_array($incl_result), "is_array(include '$incl')");
+    return array_merge($incl_result, array('include('.$incl.')' . called_at($file, $line) ));
+}
+
+/** 
+ * Function to be called from the root of any includes, after calling track_include().
+ *
+ * @param array $incl_result
+ */
+function get_debug_print_backtrace(array $incl_result) {
+    if (strpos($incl_result[0], 'debug_print_backtrace') === 0) {
+        array_shift($incl_result);
+
+        foreach ($incl_result as $key => $line) {
+            echo "#{$key}  {$line}\n";
+        }
+    }
 }
 
 /**
