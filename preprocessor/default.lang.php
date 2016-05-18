@@ -37,7 +37,9 @@ function error_handler($code, $message, $file, $line) {
     if (!$LINE_NUMBER) { $LINE_NUMBER = $line; }
     if (!$INPUT) { $INPUT = $file; }
 
-    @ob_end_clean();
+    if (ob_get_contents()) {
+        ob_end_clean();
+    }
 
     // This is for good use only with C/C++ compiler
     // that's why is won't be a standard behavior to write this to the output file
@@ -91,19 +93,30 @@ function track_include($incl, $file, $line) {
     return array_merge($incl_result, array('include('.$incl.')' . called_at($file, $line) ));
 }
 
+function handle_backtrace($incl_result, $file, $line) {
+    $backtrace = get_debug_print_backtrace($incl_result);
+
+    if ($backtrace) {
+        $error = "";
+        foreach ($backtrace as $key => $text) {
+            $error .= "#{$key}  {$text}\n";
+        }
+        error_handler(0, trim($error), $file, $line);
+    }
+}
+
 /** 
  * Function to be called from the root of any includes, after calling track_include().
  *
  * @param array $incl_result
+ * @return array
  */
 function get_debug_print_backtrace(array $incl_result) {
     if (strpos($incl_result[0], 'debug_print_backtrace') === 0) {
         array_shift($incl_result);
-
-        foreach ($incl_result as $key => $line) {
-            echo "#{$key}  {$line}\n";
-        }
+        return $incl_result;
     }
+    return null;
 }
 
 /**
