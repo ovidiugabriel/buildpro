@@ -230,7 +230,7 @@ if ($fp) {
         $last_id    = (count($stack) > 0) ? $stack[count($stack)-1] : '';
 
         if ('scrbl' == $input_type) {
-            $comment_delim = ';';
+            $comment_delim = '@;';
         } else {
             $comment_delim = '//';
         }
@@ -299,7 +299,7 @@ if ($fp) {
 
         }
 
-        elseif (preg_match("/{$T_EXT}\(import\s+\"([^;]+)\"\)/", $line, $matches)) {
+        elseif (preg_match("/{$T_EXT}import\s*\[\"(.*)\"\]/", $line, $matches)) {
             $file = str_replace('.', '/', trim($matches[1], '<">'));
             
             $cmd = sprintf("php %s lib/$file.scrbl", basename(__FILE__));
@@ -322,15 +322,21 @@ if ($fp) {
         //
         // lang directive, with scribble syntax
         //
-        elseif (preg_match("/{$T_EXT}\(lang\s*\(?[\"\']?([A-Za-z_][A-Za-z0-9_]+)[\"\']?\)?\)?/", $line, $matches)) {
+        elseif (preg_match("/{$T_EXT}lang\s*\[?[\"\']?([A-Za-z_][A-Za-z0-9_]+)[\"\']?\]?/", $line, $matches)) {
             $lang = $matches[1];
             out ($outfd, 0, "include '{$lang}.lang.php'");
         }
 
-        elseif (preg_match("/{$T_EXT}\(header-code\s*\"(.*)\"\)/", $line, $matches)) {
-            direct_write($outfd, $matches[1]);
+        elseif (preg_match("/{$T_EXT}header-code\s*\{(.*)\}/", $line, $matches)) {
+            direct_write($outfd, trim($matches[1]));
 
         }
+
+        // Arguments are not needed.
+        elseif (preg_match("/{$T_EXT}debug_print_backtrace/", $line, $matches)) {
+            out ($outfd, 0, 'return array("debug_print_backtrace()" . called_at(__FILE__, __LINE__))');
+        }
+
 /*
         elseif (preg_match("/{$T_EXT}\(print\s*(.*)\)/", $line, $matches)) {
             direct_write($outfd, trim($matches[1], '"'));

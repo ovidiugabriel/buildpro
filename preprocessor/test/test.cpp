@@ -1,7 +1,7 @@
 
-@(lang "default")
+@lang["default"]
 
-@(import "core.stdc.stdio")
+@import["core.stdc.stdio"]
 
 #define TEST 1
 
