@@ -155,6 +155,19 @@ function direct_write($fp, $text) {
     return fwrite($fp, $text . "\n");
 }
 
+
+/** 
+ * Used to execute generated PHP script.
+ *
+ * @param string $artifact
+ * @return void
+ */
+function execute_output($artifact) {
+    $incl_result = include $artifact; $file = __FILE__; $line = __LINE__;
+    handle_backtrace($incl_result, $file, $line);
+}
+
+
 //
 // MAIN CODE
 //
@@ -180,12 +193,14 @@ if (1 == $argc) {
     die;
 }
 
-$opts = getopt('o:');
+$opts = getopt('o:', array('dump-php'));
 
 $final_output = null;
 if (isset($opts['o'])) {
     $final_output = $opts['o'];
     $INPUT = $argv[3];
+} elseif (isset($opts['dump-php'])) {
+    $INPUT = $argv[2];
 } else {
     $INPUT = $argv[1];
 }
@@ -206,6 +221,11 @@ if ($fp) {
     $INPUT = trim($INPUT, ".\\/");
     $outfd = fopen($OUTPUT, 'w');
 
+    // TODO: Check $outfd
+    if ($outfd) {
+        // echo "OUTPUT=$OUTPUT\n";
+    }
+
     $stack = array();
     if ($INCLUDE_PATH = getenv('INCLUDE_PATH')) {
         out ($outfd, 0, "ini_set('include_path', ini_get('include_path') . '" . PATH_SEPARATOR . $INCLUDE_PATH . "')");
@@ -224,7 +244,9 @@ if ($fp) {
     while ($line = fgets($fp)) {
         $LINE_NUMBER++;
 
+        direct_write($outfd, "");
         out ($outfd, 0, '$LINE_NUMBER = ' . $LINE_NUMBER);
+        direct_write($outfd, "#line {$LINE_NUMBER} \"{$INPUT}\"");
 
         $line       = rtrim($line);
         $last_id    = (count($stack) > 0) ? $stack[count($stack)-1] : '';
@@ -305,7 +327,12 @@ if ($fp) {
             $cmd = sprintf("php %s lib/$file.scrbl", basename(__FILE__));
             $child = shell_exec($cmd);
 
-            direct_write($outfd, $child);
+            direct_write($outfd, "");
+            out($outfd, count($stack), "/* $line */");
+
+            out($outfd, count($stack), "/* BEGIN IMPORT */");
+            out($outfd, count($stack)+1, "echo shell_exec('$cmd')");
+            out($outfd, count($stack), "/* END IMPORT */");
         }
 
         elseif (preg_match("/{$T_EXT}require_once\s+([^;]+);/", $line, $matches)) {
@@ -316,7 +343,7 @@ if ($fp) {
 
         elseif (preg_match("/{$T_DIR}lang (.*)/", $line, $matches)) {
             // Ignore pure Racket syntax for lang directive
-            out ($outfd, 0, '');
+            out ($outfd, 0, "/*  $line */");
         }
 
         //
@@ -324,7 +351,7 @@ if ($fp) {
         //
         elseif (preg_match("/{$T_EXT}lang\s*\[?[\"\']?([A-Za-z_][A-Za-z0-9_]+)[\"\']?\]?/", $line, $matches)) {
             $lang = $matches[1];
-            out ($outfd, 0, "include '{$lang}.lang.php'");
+            out ($outfd, 0, "require_once '{$lang}.lang.php'; /* $line */");
         }
 
         elseif (preg_match("/{$T_EXT}header-code\s*\{(.*)\}/", $line, $matches)) {
@@ -334,7 +361,7 @@ if ($fp) {
 
         // Arguments are not needed.
         elseif (preg_match("/{$T_EXT}debug_print_backtrace/", $line, $matches)) {
-            out ($outfd, 0, 'return array("debug_print_backtrace()" . called_at(__FILE__, __LINE__))');
+            out ($outfd, 0, 'return array("debug_print_backtrace()" . called_at(__FILE__, __LINE__)); ' . "/* $line */");
         }
 
 /*
@@ -361,7 +388,6 @@ if ($fp) {
         */
 
         else {
-            direct_write($outfd, "#line {$LINE_NUMBER} \"{$INPUT}\"");
             direct_write($outfd, replace_defines($line, $defines));
         }
         
@@ -382,6 +408,10 @@ if ($fp) {
     fclose($outfd);
     fclose($fp);
 
-    echo shell_exec("php {$OUTPUT}");
+    if (isset($opts['dump-php'])) {
+        echo file_get_contents($OUTPUT);
+    } else {
+        execute_output($OUTPUT);
+    }
     unlink($OUTPUT);
 }

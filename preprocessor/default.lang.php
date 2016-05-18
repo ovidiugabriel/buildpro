@@ -113,7 +113,7 @@ function handle_backtrace($incl_result, $file, $line) {
  */
 function get_debug_print_backtrace(array $incl_result) {
     if (strpos($incl_result[0], 'debug_print_backtrace') === 0) {
-        array_shift($incl_result);
+        // array_shift($incl_result);
         return $incl_result;
     }
     return null;

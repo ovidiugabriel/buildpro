@@ -4,6 +4,7 @@
 @import["core.stdc.stdio"]
 
 #define TEST 1
+@debug_print_backtrace
 
 int main(int argc, char const *argv[])
 {
