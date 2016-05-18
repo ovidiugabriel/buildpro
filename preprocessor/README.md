@@ -20,6 +20,7 @@ Basicaly **PHP**+**Smarty** combination becomes your new preprocessor. You can u
 * `@require_once`
 * `@require`
 * `@require_once`
+* `config_load`
 
 ###### Not supported
  
