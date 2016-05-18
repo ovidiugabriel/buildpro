@@ -93,6 +93,12 @@ function track_include($incl, $file, $line) {
     return array_merge($incl_result, array('include('.$incl.')' . called_at($file, $line) ));
 }
 
+/**
+ * @param array $incl_result
+ * @param string $file
+ * @param integer $line
+ * @return void
+ */
 function handle_backtrace($incl_result, $file, $line) {
     $backtrace = get_debug_print_backtrace($incl_result);
 
