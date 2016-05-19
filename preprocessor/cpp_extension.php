@@ -163,8 +163,10 @@ function direct_write($fp, $text) {
  * @return void
  */
 function execute_output($artifact) {
-    $incl_result = include $artifact; $file = __FILE__; $line = __LINE__;
-    handle_backtrace($incl_result, $file, $line);
+    $incl_result = include $artifact;
+    if (is_array($incl_result)) {
+        handle_backtrace($incl_result, 'Unknown', 0);
+    }
 }
 
 
@@ -361,7 +363,7 @@ if ($fp) {
 
         // Arguments are not needed.
         elseif (preg_match("/{$T_EXT}debug_print_backtrace/", $line, $matches)) {
-            out ($outfd, 0, 'return array("debug_print_backtrace()" . called_at(__FILE__, __LINE__)); ' . "/* $line */");
+            out ($outfd, 0, 'return array("debug_print_backtrace()" . called_at("'.$INPUT.'", $LINE_NUMBER)); ' . "/* $line */");
         }
 
 /*

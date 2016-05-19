@@ -31,11 +31,18 @@
  * @param  integer $line
  * @return void
  */
-function error_handler($code, $message, $file, $line) {
+function error_handler($code, $message, $file, $line, $overwrite = false) {
     global $INPUT, $LINE_NUMBER;
 
-    if (!$LINE_NUMBER) { $LINE_NUMBER = $line; }
-    if (!$INPUT) { $INPUT = $file; }
+    // echo "error_handler($code, $message, $file, $line)";
+
+    if (!$LINE_NUMBER || $overwrite) {
+        $LINE_NUMBER = $line;
+    }
+
+    if (!$INPUT || $overwrite) {
+        $INPUT = $file;
+    }
 
     if (ob_get_contents()) {
         ob_end_clean();
@@ -45,7 +52,7 @@ function error_handler($code, $message, $file, $line) {
     // that's why is won't be a standard behavior to write this to the output file
     // but to the error console
     //
-    echo "/* Compiler error: */\n";
+    echo "/* Preprocessor error: */\n";
     echo "#line {$LINE_NUMBER} \"{$INPUT}\" \n";
 
     //
@@ -55,7 +62,13 @@ function error_handler($code, $message, $file, $line) {
         $message .= "; include_path=" . ini_get('include_path');
     }
     echo "#error \"{$message}\"\n";
-    die;
+
+    echo "/* \n";
+    echo "[Backtrace] {\n";
+    debug_print_backtrace();
+    echo "} */\n";
+
+    exit(1);
 }
 
 set_error_handler('error_handler');
@@ -99,7 +112,7 @@ function track_include($incl, $file, $line) {
  * @param integer $line
  * @return void
  */
-function handle_backtrace($incl_result, $file, $line) {
+function handle_backtrace(array $incl_result, $file, $line) {
     $backtrace = get_debug_print_backtrace($incl_result);
 
     if ($backtrace) {
@@ -107,7 +120,7 @@ function handle_backtrace($incl_result, $file, $line) {
         foreach ($backtrace as $key => $text) {
             $error .= "#{$key}  {$text}\n";
         }
-        error_handler(0, trim($error), $file, $line);
+        error_handler(0, trim($error), $file, $line, true /* overwrite (file, line) */);
     }
 }
 
