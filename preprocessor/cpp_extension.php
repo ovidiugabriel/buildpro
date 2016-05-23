@@ -189,19 +189,31 @@ function pp_error_handler($code, $message, $file, $line) {
 set_error_handler('pp_error_handler');
 
 
+function run_preprocessor($input) {
+    $output = "output/{$input}.php";
+    $cmd = sprintf('php %s --php=%s %s', __FILE__, $output, $input);
+    echo shell_exec($cmd);
+    return $output;
+}
+
 if (1 == $argc) {
     echo "Usage: \n";
     echo "    php $argv[0] [options] <file> \n";
     die;
 }
 
-$opts = getopt('o:', array('dump-php'));
+//
+// Parameters:
+//
+//  --php   generates only the intermediate scripts, do not execute them
+//
+$opts = getopt('o:', array('php::'));
 
 $final_output = null;
 if (isset($opts['o'])) {
     $final_output = $opts['o'];
     $INPUT = $argv[3];
-} elseif (isset($opts['dump-php'])) {
+} elseif (isset($opts['php'])) {
     $INPUT = $argv[2];
 } else {
     $INPUT = $argv[1];
@@ -325,16 +337,9 @@ if ($fp) {
 
         elseif (preg_match("/{$T_EXT}import\s*\[\"(.*)\"\]/", $line, $matches)) {
             $file = str_replace('.', '/', trim($matches[1], '<">'));
-            
-            $cmd = sprintf("php %s lib/$file.scrbl", basename(__FILE__));
-            $child = shell_exec($cmd);
 
-            direct_write($outfd, "");
-            out($outfd, count($stack), "/* $line */");
-
-            out($outfd, count($stack), "/* BEGIN IMPORT */");
-            out($outfd, count($stack)+1, "echo shell_exec('$cmd')");
-            out($outfd, count($stack), "/* END IMPORT */");
+            $filepath  = "lib/$file.scrbl";
+            out($outfd, count($stack), sprintf("require_once '%s'", run_preprocessor($filepath)));
         }
 
         elseif (preg_match("/{$T_EXT}require_once\s+([^;]+);/", $line, $matches)) {
@@ -363,7 +368,8 @@ if ($fp) {
 
         // Arguments are not needed.
         elseif (preg_match("/{$T_EXT}debug_print_backtrace/", $line, $matches)) {
-            out ($outfd, 0, 'return array("debug_print_backtrace()" . called_at("'.$INPUT.'", $LINE_NUMBER)); ' . "/* $line */");
+            // out ($outfd, 0, 'return array("debug_print_backtrace()" . called_at("'.$INPUT.'", $LINE_NUMBER)); ' . "/* $line */");
+            out ($outfd, count($stack), 'debug_print_backtrace()');
         }
 
 /*
@@ -398,7 +404,8 @@ if ($fp) {
         //
     }
 
-    if ($final_output) {
+    if ($final_output && (!isset($opts['php']) || ('' === $opts['php'])) ) {
+
         $dir = dirname($final_output);
         if (!file_exists($dir)) {
             mkdir($dir, 0777, true);
@@ -410,8 +417,13 @@ if ($fp) {
     fclose($outfd);
     fclose($fp);
 
-    if (isset($opts['dump-php'])) {
-        echo file_get_contents($OUTPUT);
+    if (isset($opts['php'])) {
+
+        if ($opts['php']) {
+            copy($OUTPUT, $opts['php']);
+        } else {
+            echo file_get_contents($OUTPUT);
+        }
     } else {
         execute_output($OUTPUT);
     }

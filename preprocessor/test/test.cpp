@@ -2,9 +2,9 @@
 @lang["default"]
 
 @import["core.stdc.stdio"]
+@import["test_debug_print_backtrace"]
 
 #define TEST 1
-@debug_print_backtrace
 
 int main(int argc, char const *argv[])
 {

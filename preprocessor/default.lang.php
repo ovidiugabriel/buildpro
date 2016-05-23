@@ -2,7 +2,7 @@
 
 /* ************************************************************************* */
 /*                                                                           */
-/*  Title:       default.lib.php                                             */
+/*  Title:       default.lang.php                                            */
 /*                                                                           */
 /*  Created on:  06.03.2016 at 08:45:19                                      */
 /*  Email:       ovidiugabriel@gmail.com                                     */
