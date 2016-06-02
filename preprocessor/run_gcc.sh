@@ -5,6 +5,8 @@ RESET="\033[0m"
 Yellow="\e[33m"
 LightRed="\e[91m"
 
+PHP_EXE_NAME=hhvm
+
 # When using Cygwin, the Windows path must be supplied
 if type "cygpath" 1> /dev/null 2> /dev/null ; then
   MY_PWD=$(cygpath -w `pwd`)
@@ -28,7 +30,11 @@ if [ "$1" != "" ] ; then
     fi
 
     echo -e "*** ${BOLD}${Yellow} [ Running preprocessor ] ${RESET} ***"
-    php ./cpp_extension.php -o output/$1.out $1
+    $PHP_EXE_NAME ./cpp_extension.php -o output/$1.out $1
+
+    # clear empty lines
+    grep -v '^$' output/$1.out > output/$1.out.tmp
+    mv  output/$1.out.tmp output/$1.out
 
     if [ "$?" == "1" ] ; then
         echo -e "${BOLD}${LightRed}[#] ERROR: Preprocessor error. Stop. $RESET"

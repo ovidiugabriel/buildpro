@@ -1,4 +1,4 @@
-<?php
+<?hh
 
 /* ************************************************************************* */
 /*                                                                           */
@@ -31,8 +31,10 @@
  * @param  integer $line
  * @return void
  */
-function error_handler($code, $message, $file, $line, $overwrite = false) {
-    global $INPUT, $LINE_NUMBER;
+function error_handler(int $code, string $message, string $file, int $line, bool $overwrite = false):void {
+    $INPUT       = $GLOBALS['INPUT'];
+    $LINE_NUMBER = (int) $GLOBALS['LINE_NUMBER'];
+    // global $INPUT, $LINE_NUMBER;
 
     // echo "error_handler($code, $message, $file, $line)";
 
@@ -62,12 +64,6 @@ function error_handler($code, $message, $file, $line, $overwrite = false) {
         $message .= "; include_path=" . ini_get('include_path');
     }
     echo "#error \"{$message}\"\n";
-
-    echo "/* \n";
-    echo "[Backtrace] {\n";
-    debug_print_backtrace();
-    echo "} */\n";
-
     exit(1);
 }
 
@@ -82,7 +78,7 @@ set_error_handler('error_handler');
  * @param intger $line
  * @return string
  */
-function called_at($file, $line) {
+function called_at(string $file, int $line):string {
     return sprintf(' called at [%s:%d]', $file, (int) $line);
 }
 
@@ -100,9 +96,10 @@ function called_at($file, $line) {
  * @param  integer $line [description]
  * @return array
  */
-function track_include($incl, $file, $line) {
+function track_include(string $incl, string $file, int $line):array {
     $incl_result = include $incl;
-    assert(is_array($incl_result), "is_array(include '$incl')");
+    // FIXME: Replace assert() with a custom implementation
+    assert(is_array($incl_result)); // , "is_array(include '$incl')");
     return array_merge($incl_result, array('include('.$incl.')' . called_at($file, $line) ));
 }
 
@@ -112,7 +109,7 @@ function track_include($incl, $file, $line) {
  * @param integer $line
  * @return void
  */
-function handle_backtrace(array $incl_result, $file, $line) {
+function handle_backtrace(array $incl_result, string $file, int $line):void {
     $backtrace = get_debug_print_backtrace($incl_result);
 
     if ($backtrace) {
@@ -130,7 +127,7 @@ function handle_backtrace(array $incl_result, $file, $line) {
  * @param array $incl_result
  * @return array
  */
-function get_debug_print_backtrace(array $incl_result) {
+function get_debug_print_backtrace(array $incl_result):?array {
     if (strpos($incl_result[0], 'debug_print_backtrace') === 0) {
         // array_shift($incl_result);
         return $incl_result;
@@ -145,10 +142,11 @@ function get_debug_print_backtrace(array $incl_result) {
  * @param string $text
  * @return string
  */
-function camelize($text) {
+function camelize(string $text):string {
     $parts = preg_split('/-|_/', $text);
     $st = array_shift($parts);
-    return $st. implode('', array_map('ucfirst', $parts));
+    // Note: Hack does not accept 'string' as a callable type
+    return $st. implode('', array_map(ucfirst, $parts));
 }
 
 /**
@@ -158,7 +156,7 @@ function camelize($text) {
  * @param string $text
  * @return string
  */
-function dasherize($text) {
+function dasherize(string $text):string {
     $text = preg_replace('/[_\s]+/', '-', $text);
     $text = preg_replace('/([A-Z])/', '-$1', $text);
     $text = preg_replace('/-+/', '-', $text);
@@ -173,7 +171,7 @@ function dasherize($text) {
  * @param string $text
  * @return string
  */
-function underscore($text) {
+function underscore(string $text):string {
     $st = ctype_upper(substr($text, 0, 1)) ? '_' : '';
 
     $text = preg_replace('/([a-z\d])([A-Z]+)/', '$1_$2', $text);
@@ -186,7 +184,7 @@ function underscore($text) {
 /** 
  * @return boolean
  */
-function is_unittest() {
+function is_unittest():bool {
     $opts = getopt('', array('unittest'));
     return isset($opts['unittest']);
 }
