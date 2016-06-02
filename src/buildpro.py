@@ -1,21 +1,6 @@
 #!/usr/bin/env python
 
 #
-# The main idea of this tool is that it can generate tupfiles, makefiles, etc.
-# Or it can pass strings directly to your favourite compiler, gcc, dmc, etc.
-#
-
-#
-# After binary artifact is generated, unit-test is performed, and test report
-# with test coverage is displayed
-#
-
-#
-# This tool is using YAML format.
-# http://pyyaml.org/wiki/PyYAMLDocumentation
-#
-
-#
 # *************************************************************************
 #
 #  Title:       buildpro.py
@@ -34,12 +19,27 @@
 #
 # Date         Name    Reason
 # -------------------------------------------------------------------------
+# 02.06.2016           Replaced enumerate() with values()
 # 03.03.2016           Fixed .exe target on Windows
 # 02.03.2016           Small final_cmd changes
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # History (END).
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#
+# The main idea of this tool is that it can generate tupfiles, makefiles, etc.
+# Or it can pass strings directly to your favourite compiler, gcc, dmc, etc.
+#
+
+#
+# After binary artifact is generated, unit-test is performed, and test report
+# with test coverage is displayed
+#
+
+#
+# This tool is using YAML format.
+# http://pyyaml.org/wiki/PyYAMLDocumentation
+#
 
 import sys
 import os
@@ -49,6 +49,13 @@ import re
 import json
 import platform
 from compiler.base import compiler_base
+
+# Some 'contants' definitions
+BOLD="\033[1m"
+RESET="\033[0m"
+
+# Global variables
+env = os.environ
 
 #
 # Executes command via shell and return the complete output as a string
@@ -174,12 +181,6 @@ if 1 == len(sys.argv):
     print('Error: Invalid command line. Specify the project name.')
     buildpro_exit(1)
 
-# Some 'contants' definitions
-BOLD="\033[1m"
-RESET="\033[0m"
-
-env = os.environ
-
 if '-proto' == sys.argv[1].strip():
     proto()
     buildpro_exit(0)
@@ -219,7 +220,7 @@ if 'includes' in data:
     if data['includes'] != None:
         # https://wiki.python.org/moin/HandlingExceptions
         try:
-            for (key, value) in enumerate(data['includes']):
+            for value in data['includes'].values():
                 value = value.format(**env).replace('$', '')
                 compiler.append_include_path(value)
         except KeyError, ex:
@@ -237,7 +238,7 @@ if 'sources' in data:
         compiler.append_source(value.format(**env).replace('$', ''))
 
 if 'library_paths' in data:
-    for (key, value) in enumerate(data['library_paths']):
+    for value in data['library_paths'].values():
         compiler.append_library_path(value.format(**env).replace('$', ''))
 
 #
@@ -280,6 +281,7 @@ try:
     compiler.set_logfile(compiler_base.LOG_TYPE_BOTH, log_file_name)
     compiler.set_verbose(True)
     final_cmd_output = shell_exec(compiler.get_command(), True)
+
     if os.path.exists(log_file_name):
         buildpro_print('Printing logs ...')
         with open(log_file_name, 'r') as log_file:
@@ -292,6 +294,7 @@ except subprocess.CalledProcessError:
 
 buildpro_print('Checking artifacts ...')
 artifact_exists = os.path.exists(output) and os.path.isfile(output)
+
 if artifact_exists:
     print(output + ' was created')
     if 'deploy' in data:
