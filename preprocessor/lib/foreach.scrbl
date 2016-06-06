@@ -5,8 +5,15 @@
 
 #define COUNT(x) ((ssize_t)(sizeof(x)/sizeof((x)[0])))
 
-@(define (type-len type) "COUNT")
-@(define (type-implicit-value type) "0")
+@(require racket/match)
+@(define (type-len type)
+   (match type
+     ["int" "COUNT"]
+     ))
+@(define (type-implicit-value type)
+   (match type
+     ["int" "0"]
+     ))
 
 @(define (foreach all) 
    (define a (string-split all " "))
