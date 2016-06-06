@@ -15,21 +15,24 @@
      ["int" "0"]
      ))
 
-@(define (foreach all) 
+@(define (foreach all block) 
    (define a (string-split all " "))
    ((lambda (type e v)
-      @string-append{int n = @|(type-len type)|(@|v|);
+      @string-append{ @|"{"|
+            int n = @|(type-len type)|(@|v|);
             @|type| @|e| = @|v|[0];
             int i;
-            for (i = 0; i < n; i = i + 1, @|e| = @|v|[i])
+            for (i = 0; i < n; i = i + 1, @|e| = @|v|[i]) @|"{"| @|block| @|"}}"|
         }
       ) (first a) (second a) (third a)) 
    )
 
 int main()
 {
+    int n; int i;
+
     int v[5] = {0, 1, 2, 3, 4};
-    @foreach{ int e v } {
+    @foreach["int e v"]{
         printf("%d\n", e);
     }
     return 0;
