@@ -1,4 +1,4 @@
-#!/usr/bin/env php
+#!/usr/bin/env hhvm
 <?hh
 
 /* ************************************************************************* */
@@ -84,7 +84,7 @@
 define ('DIRECTIVE_PREFIX', '(#|\%:)');
 define ('PHP_TAG_NAME',     'hh');
 define ('PHP_EXE_NAME',     'hhvm');
-define ('NO_SEP', '');	// No separator
+define ('NO_SEP', '');  // No separator
 
 /*                                                                           */
 /* --- PUBLIC OPERATIONS (GLOBAL FUNCTIONS) ---                              */
@@ -99,7 +99,7 @@ define ('NO_SEP', '');	// No separator
  * @param string $sep
  * @return void
  */
-function out($fp, int $n_tabs, string $text, string $sep = ';'):void {
+function out($fp, int $n_tabs, string $text, string $sep = ";"):void {
     static $file_started = false;
 
     if (!$file_started) {
@@ -164,7 +164,7 @@ function define_decorator(string $value):string {
  * @param string $line
  * @param array $defines
  */
-function replace_defines(string $line = '', array $defines = array()):string {
+function replace_defines(string $line = "", array $defines = array()):string {
     if (!$line) { return $line; }   // Here we have an empty line, nothing to replace
 
     if (false !== strpos($line, '"')) {
@@ -199,7 +199,7 @@ function direct_write(resource $fp, string $text):int {
  * @param string $artifact
  * @return void
  */
-function execute_output($artifact) {
+function execute_output($artifact:string):void {
     $incl_result = include $artifact;
     if (is_array($incl_result)) {
         handle_backtrace($incl_result, 'Unknown', 0);
@@ -218,7 +218,7 @@ function execute_output($artifact) {
  * @param integer $line
  * @exits - exits the current process
  */
-function pp_error_handler($code, $message, $file, $line) {
+function pp_error_handler(int $code, string $message, string $file, int $line):void {
     echo "#line {$line} \"".basename($file)."\"\n";
     echo "#error \"{$message}\"\n";
 
@@ -227,14 +227,22 @@ function pp_error_handler($code, $message, $file, $line) {
 }
 set_error_handler('pp_error_handler');
 
-
-function run_preprocessor(string $input) {
+/** 
+ * @param string $input
+ * @return string
+ */
+function run_preprocessor(string $input):string {
     $output = "output/{$input}.php";
     $cmd = sprintf('%s %s --php=%s %s', PHP_EXE_NAME, __FILE__, $output, $input);
     echo shell_exec($cmd);
     return $output;
 }
 
+/** 
+ * @param integer $argc
+ * @param array $argv
+ * @return integer
+ */
 function main(int $argc, array $argv):int {
 
     if (1 == $argc) {
