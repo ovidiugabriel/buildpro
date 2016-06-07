@@ -1,39 +1,44 @@
-#lang scribble/text
+#lang racket
 
-#include <sys/types.h>
-#include <stdio.h>
+;;
+;; Usage Example:
+;;
+;;  int v[5] = {0, 1, 2, 3, 4};
+;;    @foreach["int e v"]{
+;;        printf("%d\n", e);
+;;    }
+;;
 
-#define COUNT(x) ((ssize_t)(sizeof(x)/sizeof((x)[0])))
+(require racket/match)
 
-@(require racket/match)
-@(define (type-len type)
-   (match type
-     ["int" "COUNT"]
-     ))
-@(define (type-implicit-value type)
-   (match type
-     ["int" "0"]
-     ))
+(provide foreach)
 
-@(define (foreach all block) 
-   (define a (string-split all " "))
-   ((lambda (type e v)
-      @string-append{ @|"{"|
-            int n = @|(type-len type)|(@|v|);
-            @|type| @|e| = @|v|[0];
-            int i;
-            for (i = 0; i < n; i = i + 1, @|e| = @|v|[i]) @|"{"| @|block| @|"}}"|
-        }
-      ) (first a) (second a) (third a)) 
-   )
+(define (tab n) (build-string (* 4 n) (lambda (i) #\ )))
 
-int main()
-{
-    int n; int i;
+(define nl (~a #\newline))
 
-    int v[5] = {0, 1, 2, 3, 4};
-    @foreach["int e v"]{
-        printf("%d\n", e);
-    }
-    return 0;
-}
+(define (type-len type)
+  (match type
+    ["int" "COUNT"]
+    ))
+
+(define (type-implicit-value type)
+  (match type
+    ["int" "0"]
+    ))
+
+(define (foreach all block) 
+  (define arg (string-split all " "))
+  ((lambda (type e v)
+     (string-append
+      "{" nl
+      (tab 2) "int n = " (type-len type) "(" v ");" nl
+      (tab 2) type " " e " = " v "[0];" nl
+      (tab 2) "int i;" nl
+      (tab 2) "for (i = 0; i < n; i = i + 1, " e " = " v "[i]) {" nl
+      (tab 3) block nl
+      (tab 2) "}" nl
+      (tab 2) "}"
+      )
+     ) (first arg) (second arg) (third arg) )
+  )
