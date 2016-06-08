@@ -85,6 +85,7 @@ define ('DIRECTIVE_PREFIX', '(#|\%:)');
 define ('PHP_TAG_NAME',     'hh');
 define ('PHP_EXE_NAME',     'hhvm');
 define ('NO_SEP', '');  // No separator
+define ('SEP_SEMICOLON', ';');
 
 /*                                                                           */
 /* --- PUBLIC OPERATIONS (GLOBAL FUNCTIONS) ---                              */
@@ -99,7 +100,7 @@ define ('NO_SEP', '');  // No separator
  * @param string $sep
  * @return void
  */
-function out($fp, int $n_tabs, string $text, string $sep = ";"):void {
+function out($fp, int $n_tabs, string $text, string $sep = SEP_SEMICOLON):void {
     static $file_started = false;
 
     if (!$file_started) {
@@ -164,7 +165,7 @@ function define_decorator(string $value):string {
  * @param string $line
  * @param array $defines
  */
-function replace_defines(string $line = "", array $defines = array()):string {
+function replace_defines(string $line = NO_SEP, array $defines = array()):string {
     if (!$line) { return $line; }   // Here we have an empty line, nothing to replace
 
     if (false !== strpos($line, '"')) {
