@@ -167,7 +167,7 @@ function define_decorator(string $value):string {
  * @param string $line
  * @param array $defines
  */
-function replace_defines(string $line = NO_SEP, array $defines = array()):string {
+function replace_defines(string $line, array $defines = array()):string {
     if (!$line) { return $line; }   // Here we have an empty line, nothing to replace
 
     if (false !== strpos($line, '"')) {
