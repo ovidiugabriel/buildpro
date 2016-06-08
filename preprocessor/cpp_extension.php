@@ -100,8 +100,10 @@ define ('SEP_SEMICOLON', ';');
  * @param string $sep
  * @return void
  */
-function out($fp, int $n_tabs, string $text, string $sep = SEP_SEMICOLON):void {
+function out($fp, int $n_tabs, string $text, string $sep = null):void {
     static $file_started = false;
+
+    if (null === $sep) { $sep = SEP_SEMICOLON; }
 
     if (!$file_started) {
         //
