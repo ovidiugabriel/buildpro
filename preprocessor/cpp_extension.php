@@ -100,7 +100,7 @@ define ('SEP_SEMICOLON', ';');
  * @param string $sep
  * @return void
  */
-function out($fp, int $n_tabs, string $text, string $sep = null):void {
+function out(resource $fp, int $n_tabs, string $text, string $sep = null):void {
     static $file_started = false;
 
     if (null === $sep) { $sep = SEP_SEMICOLON; }
@@ -156,6 +156,9 @@ function error(int $n_tabs, string $text):void {
 }
 
 /** 
+ * This function application results in decorator to be used in the generated code
+ * to get the value of the defined constant name.
+ *
  * @param string $value
  * @return string
  */
@@ -164,6 +167,8 @@ function define_decorator(string $value):string {
 }
 
 /**
+ * Replaces in the given line all occurences of defines with their decorators.
+ *
  * @param string $line
  * @param array $defines
  */
