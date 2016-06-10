@@ -1,6 +1,13 @@
 <?php
 
-class Parser extends stdClass {
+interface IParser {
+    public function endElement($tag);
+    public function startElement($tag);
+    public function characterData($string);
+    public function __toString();
+}
+
+class Parser extends stdClass implements IParser {
     private $stack = array();
     private $output = '';
 
@@ -40,7 +47,7 @@ class State {
     const IN_STRING = 3;    // Reading a string 
 }
 
-function xexpr_to_xml($input, stdClass $parser) {
+function xexpr_to_xml($input, IParser $parser) {
     $state  = State::STOP;
     $cons   = '';
     $stack = array();
@@ -55,13 +62,13 @@ function xexpr_to_xml($input, stdClass $parser) {
 
             case ')':
                 $state = State::STOP;
-                call_user_func(array($parser, 'endElement'), array_pop($stack));
+                $parser->endElement(array_pop($stack));
                 break;
 
             case ' ':
                 if (State::CONS == $state) {
                     $state = State::START;
-                    call_user_func(array($parser, 'startElement'), $cons);
+                    $parser->startElement($cons);
                     $stack[] = $cons;
                     $cons = '';
                 }
@@ -71,7 +78,7 @@ function xexpr_to_xml($input, stdClass $parser) {
                 if (State::START == $state) {
                     $state = State::IN_STRING;
                 } elseif (State::IN_STRING == $state) {
-                    call_user_func(array($parser, 'characterData'), $string);
+                    $parser->characterData($string);
                     $string = '';
                     $state = State::START;
                 }
@@ -95,10 +102,11 @@ function xexpr_to_xml($input, stdClass $parser) {
 //
 // Usage Example:
 //
-//      $input = '
-//          (html
-//              (head (title "Hello") )
-//              (body "Hi!")
-//          )';
-//      echo xexpr_to_xml($input, new Parser());
-//
+/*
+      $input = '
+          (html
+              (head (title "Hello") )
+              (body "Hi!")
+          )';
+      echo xexpr_to_xml($input, new Parser());
+*/
