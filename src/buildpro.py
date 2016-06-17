@@ -92,6 +92,18 @@ def buildpro_exit(code):
     print('Bye. [exit ' + str(code) + ']')
     exit(code)
 
+def get_inline_command(filename):
+    with open(filename, 'r') as f:
+        for line in f:
+            line = line.strip('/*\n ')
+            if line:
+                m = re.search('(buildpro|build):(.*)', line)
+                if m:
+                    cmd = m.group(2).strip()
+                    cmd = cmd.replace('__FILE__', filename)
+                    return cmd
+    return ""
+
 def proto():
     if len(sys.argv) < 5:
         print('Error: Invalid command line.')
@@ -180,6 +192,15 @@ def php(cmd, show_echo):
 if 1 == len(sys.argv):
     print('Error: Invalid command line. Specify the project name.')
     buildpro_exit(1)
+
+if '-inline' == sys.argv[1].strip():
+    cmd = get_inline_command(sys.argv[2])
+    buildpro_print('Running build command ...')
+    cmd_output = shell_exec(cmd, True)
+    print('')
+    buildpro_print('Flushing output ...')
+    print(cmd_output)
+    buildpro_exit(0)
 
 if '-proto' == sys.argv[1].strip():
     proto()
