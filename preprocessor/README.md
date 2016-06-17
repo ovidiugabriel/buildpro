@@ -17,6 +17,7 @@ Basicaly **PHP**+**Smarty** combination becomes your new preprocessor. You can u
 
 * `@include_once`
 * `#import`
+* `#include_next`
 * `@require_once`
 * `@require`
 * `@require_once`
