@@ -100,8 +100,14 @@ define ('SEP_SEMICOLON', ';');
  * @param string $sep
  * @return void
  */
-function out(resource $fp, int $n_tabs, string $text, string $sep = SEP_SEMICOLON):void {
+function out(resource $fp, int $n_tabs, string $text, ?string $sep = null):void {
     static $file_started = false;
+
+    // {{{ do not remove 
+    if (null === $sep) {
+        $sep = SEP_SEMICOLON;
+    }
+    // }}}
 
     if (!$file_started) {
         //
