@@ -19,6 +19,7 @@
 /*                                                                           */
 /* Date         Name    Reason                                               */
 /* ------------------------------------------------------------------------- */
+/* 03.07.2016           Created Cpp class for C preprocessor                 */
 /* 02.06.2016           Included global code in main() function              */
 /* 23.05.2016           Several updates to @import tag                       */
 /* 19.03.2016           Added recursive imports                              */
@@ -250,6 +251,91 @@ function run_preprocessor(string $input):string {
     return $output;
 }
 
+class Cpp {
+
+    private resource $outfd;
+    public array $stack = array();
+    public ?string $last_id = null;
+    public array $defines = array();
+
+    public function __construct() {
+        $this->outfd = $GLOBALS['outfd'];
+    }
+
+    public function getRules() {
+        //
+        // Rules for the replacement of standard C++ preprocessor
+        //
+        return array(
+            "/{T_DIR}define\s+([^\s]+)\s*(.*)/" =>  array($this, 'std_define'),
+            "/{T_DIR}if\s+(.*)/"                =>  array($this, 'std_if'),
+            "/{T_DIR}elif\s+(.*)/"              =>  array($this, 'std_elif'),
+            "/{T_DIR}endif/"                    =>  array($this, 'std_endif'),
+            "/{T_DIR}else/"                     =>  array($this, 'std_else'),
+            "/{T_DIR}ifdef\s+(.*)/"             =>  array($this, 'std_ifdef'),
+            "/{T_DIR}ifndef\s+(.*)/"            =>  array($this, 'std_ifndef'),
+            "/{T_DIR}include\s+(.*)/"           =>  array($this, 'std_include'),
+            "/{T_DIR}undef\s+(.*)/"             =>  array($this, 'std_undef'),
+            "/{T_DIR}pragma\s+(.*)/"            =>  array($this, 'std_pragma'),
+            "/{T_DIR}error\s*(.*)/"             =>  array($this, 'std_error'),
+        );
+    }
+
+    public function std_define(string $line, array $matches):void {
+        out($this->outfd, count($this->stack), "define('$matches[2]', '$matches[3]')");
+        $this->defines[$matches[2]] = define_decorator($matches[2]);
+    }
+
+    public function std_if(string $line, array $matches):void {
+        $this->last_id = uniqid();
+        array_push($this->stack, $this->last_id);
+        out($this->outfd, count($this->stack)-1, "if ($matches[2]) {", NO_SEP);
+    }
+
+    public function std_elif(string $line, array $matches):void {
+        $matches[1] = preg_replace('/defined\((.*)\)/', "defined('$1')", $matches[1]);
+        out($this->outfd, count($this->stack)-1, "elseif ($matches[2]):");
+    }
+
+    public function std_endif(string $line, array $matches):void {
+        out($this->outfd, count($this->stack)-1, "}", NO_SEP);
+        array_pop($this->stack);
+    }
+
+    public function std_else(string $line, array $matches):void {
+        out($this->outfd, count($this->stack)-1, "else:");
+    }
+
+    public function std_ifdef(string $line, array $matches):void {
+        $this->last_id = uniqid();
+        array_push($this->stack, $this->last_id);
+        out($this->outfd, count($this->stack)-1, "if (defined('$matches[2]')) {", NO_SEP);
+    }
+
+    public function std_ifndef(string $line, array $matches):void {
+        $this->last_id = uniqid();
+        array_push($this->stack, $this->last_id);
+        out($this->outfd, count($this->stack)-1, "if (!defined('$matches[2]')) {", NO_SEP);
+    }
+
+    public function std_include(string $line, array $matches):void {
+        $file = trim($matches[1], '<">');
+        out($this->outfd, count($this->stack), "require '$file'");
+    }
+
+    public function std_undef(string $line, array $matches):void {
+        error(count($this->stack), 'undef is not allowed here');
+    }
+
+    public function std_pragma(string $line, array $matches):void {
+        error(count($this->stack), 'pragma is not allowed here');
+    }
+
+    public function std_error(string $line, array $matches):void {
+        error(count($this->stack), trim($matches[2], '"'));
+    }
+}
+
 /** 
  * @param integer $argc
  * @param array $argv
@@ -317,7 +403,8 @@ function main(int $argc, array $argv):int {
         }
         $GLOBALS['outfd'] = $outfd;
 
-        $stack = array();
+        $cpp = new Cpp();
+
         if ($INCLUDE_PATH = getenv('INCLUDE_PATH')) {
             out ($outfd, 0, "ini_set('include_path', ini_get('include_path') . '" . PATH_SEPARATOR . $INCLUDE_PATH . "')");
         }
@@ -330,8 +417,6 @@ function main(int $argc, array $argv):int {
         $T_DIR = '^\s*' . DIRECTIVE_PREFIX;          // Directive prefix token
         $T_EXT = '^\s*@';
 
-        $defines = array();
-
         while ($line = fgets($fp)) {
             $LINE_NUMBER++;
 
@@ -340,7 +425,7 @@ function main(int $argc, array $argv):int {
             direct_write($outfd, "#line {$LINE_NUMBER} \"{$INPUT}\"");
 
             $line       = rtrim($line);
-            $last_id    = (count($stack) > 0) ? $stack[count($stack)-1] : '';
+            $cpp->last_id    = (count($cpp->stack) > 0) ? $cpp->stack[count($cpp->stack)-1] : '';
 
             if ('scrbl' == $input_type) {
                 $comment_delim = '@;';
@@ -358,47 +443,37 @@ function main(int $argc, array $argv):int {
             //
 
             if (preg_match("/{$T_DIR}define\s+([^\s]+)\s*(.*)/", $line, $matches)) {
-                out($outfd,  count($stack), "define('$matches[2]', '$matches[3]')");
-                $defines[$matches[2]] = define_decorator($matches[2]);
+                $cpp->std_define($line, $matches);
 
             } elseif (preg_match("/{$T_DIR}if\s+(.*)/", $line, $matches)) {
-                $last_id = uniqid();
-                array_push($stack, $last_id);
-                out($outfd, count($stack)-1, "if ($matches[2]) {", NO_SEP);
+                $cpp->std_if($line, $matches);
 
             } elseif (preg_match("/{$T_DIR}elif\s+(.*)/", $line, $matches)) {
-                $matches[1] = preg_replace('/defined\((.*)\)/', "defined('$1')", $matches[1]);
-                out($outfd, count($stack)-1, "elseif ($matches[2]):");
+                $cpp->std_elif($line, $matches);
 
-            } elseif (preg_match("/{$T_DIR}endif/", $line)) {
-                out($outfd, count($stack)-1, "}", NO_SEP);
-                array_pop($stack);
+            } elseif (preg_match("/{$T_DIR}endif/", $line, $matches)) {
+                $cpp->std_endif($line, $matches);
 
-            } elseif (preg_match("/{$T_DIR}else/", $line)) {
-                out($outfd, count($stack)-1, "else:");
+            } elseif (preg_match("/{$T_DIR}else/", $line, $matches)) {
+                $cpp->std_else($line, $matches);
 
             } elseif (preg_match("/{$T_DIR}ifdef\s+(.*)/", $line, $matches)) {
-                $last_id = uniqid();
-                array_push($stack, $last_id);
-                out($outfd, count($stack)-1, "if (defined('$matches[2]')) {", NO_SEP);
+                $cpp->std_ifdef($line, $matches);
 
             } elseif (preg_match("/{$T_DIR}ifndef\s+(.*)/", $line, $matches)) {
-                $last_id = uniqid();
-                array_push($stack, $last_id);
-                out($outfd, count($stack)-1, "if (!defined('$matches[2]')) {", NO_SEP);
+                $cpp->std_ifndef($line, $matches);
 
             } elseif (preg_match("/{$T_DIR}include\s+(.*)/", $line, $matches)) {
-                $file = trim($matches[1], '<">');
-                out($outfd, count($stack), "require '$file'");
+                $cpp->std_include($line, $matches);
 
             } elseif (preg_match("/{$T_DIR}undef\s+(.*)/", $line, $matches)) {
-                error(count($stack), 'undef is not allowed here');
+                $cpp->std_undef($line, $matches);
 
             } elseif (preg_match("/{$T_DIR}pragma\s+(.*)/", $line, $matches)) {
-                error(count($stack), 'pragma is not allowed here');
+                $cpp->std_pragma($line, $matches);
 
             } elseif (preg_match("/{$T_DIR}error\s*(.*)/", $line, $matches)) {
-                error(count($stack), trim($matches[2], '"'));
+                $cpp->std_error($line, $matches);
 
             }
 
@@ -408,7 +483,7 @@ function main(int $argc, array $argv):int {
 
             elseif (preg_match("/{$T_EXT}require\s+([^;]+);/", $line, $matches)) {
                 $file = trim($matches[1], '<">');
-                out($outfd, count($stack), "require '$file'");
+                out($outfd, count($cpp->stack), "require '$file'");
 
             }
 
@@ -416,12 +491,12 @@ function main(int $argc, array $argv):int {
                 $file = str_replace('.', '/', trim($matches[1], '<">'));
 
                 $filepath  = "lib/$file.scrbl";
-                out($outfd, count($stack), sprintf("require_once '%s'", run_preprocessor($filepath)));
+                out($outfd, count($cpp->stack), sprintf("require_once '%s'", run_preprocessor($filepath)));
             }
 
             elseif (preg_match("/{$T_EXT}require_once\s+([^;]+);/", $line, $matches)) {
                 $file = trim($matches[1], '<">');
-                out($outfd, count($stack), "require_once '$file'");
+                out($outfd, count($cpp->stack), "require_once '$file'");
 
             }
 
@@ -446,7 +521,7 @@ function main(int $argc, array $argv):int {
             // Arguments are not needed.
             elseif (preg_match("/{$T_EXT}debug_print_backtrace/", $line, $matches)) {
                 // out ($outfd, 0, 'return array("debug_print_backtrace()" . called_at("'.$INPUT.'", $LINE_NUMBER)); ' . "/* $line */");
-                out ($outfd, count($stack), 'debug_print_backtrace()');
+                out ($outfd, count($cpp->stack), 'debug_print_backtrace()');
             }
 
     /*
@@ -472,7 +547,7 @@ function main(int $argc, array $argv):int {
             */
 
             else {
-                direct_write($outfd, replace_defines($line, $defines));
+                direct_write($outfd, replace_defines($line, $cpp->defines));
             }
 
             //
