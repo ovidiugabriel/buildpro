@@ -82,11 +82,11 @@
 /**
  * Don't remove parenthesis as it will confuse the parser.
  */
-define ('DIRECTIVE_PREFIX', '(#|\%:)');
-define ('PHP_TAG_NAME',     'hh');
-define ('PHP_EXE_NAME',     'hhvm');
-define ('NO_SEP', '');  // No separator
-define ('SEP_SEMICOLON', ';');
+const string DIRECTIVE_PREFIX   = '(#|\%:)';
+const string PHP_TAG_NAME       = 'hh';
+const string PHP_EXE_NAME       = 'hhvm';
+const string NO_SEP             = '';  // No separator
+const string SEP_SEMICOLON      = ';';
 
 /*                                                                           */
 /* --- PUBLIC OPERATIONS (GLOBAL FUNCTIONS) ---                              */
@@ -267,17 +267,17 @@ class Cpp {
         // Rules for the replacement of standard C++ preprocessor
         //
         return array(
-            "/{T_DIR}define\s+([^\s]+)\s*(.*)/" =>  array($this, 'std_define'),
-            "/{T_DIR}if\s+(.*)/"                =>  array($this, 'std_if'),
-            "/{T_DIR}elif\s+(.*)/"              =>  array($this, 'std_elif'),
-            "/{T_DIR}endif/"                    =>  array($this, 'std_endif'),
-            "/{T_DIR}else/"                     =>  array($this, 'std_else'),
-            "/{T_DIR}ifdef\s+(.*)/"             =>  array($this, 'std_ifdef'),
-            "/{T_DIR}ifndef\s+(.*)/"            =>  array($this, 'std_ifndef'),
-            "/{T_DIR}include\s+(.*)/"           =>  array($this, 'std_include'),
-            "/{T_DIR}undef\s+(.*)/"             =>  array($this, 'std_undef'),
-            "/{T_DIR}pragma\s+(.*)/"            =>  array($this, 'std_pragma'),
-            "/{T_DIR}error\s*(.*)/"             =>  array($this, 'std_error'),
+            "/{T_DIR}define\s+([^\s]+)\s*(.*)/" =>  'std_define',
+            "/{T_DIR}if\s+(.*)/"                =>  'std_if',
+            "/{T_DIR}elif\s+(.*)/"              =>  'std_elif',
+            "/{T_DIR}endif/"                    =>  'std_endif',
+            "/{T_DIR}else/"                     =>  'std_else',
+            "/{T_DIR}ifdef\s+(.*)/"             =>  'std_ifdef',
+            "/{T_DIR}ifndef\s+(.*)/"            =>  'std_ifndef',
+            "/{T_DIR}include\s+(.*)/"           =>  'std_include',
+            "/{T_DIR}undef\s+(.*)/"             =>  'std_undef',
+            "/{T_DIR}pragma\s+(.*)/"            =>  'std_pragma',
+            "/{T_DIR}error\s*(.*)/"             =>  'std_error',
         );
     }
 
@@ -438,48 +438,25 @@ function main(int $argc, array $argv):int {
             if ($has_comment) {
                 $line = array_shift($comment);
             }
+
             //
             // Replacement of C++ preprocessor
             //
 
-            if (preg_match("/{$T_DIR}define\s+([^\s]+)\s*(.*)/", $line, $matches)) {
-                $cpp->std_define($line, $matches);
-
-            } elseif (preg_match("/{$T_DIR}if\s+(.*)/", $line, $matches)) {
-                $cpp->std_if($line, $matches);
-
-            } elseif (preg_match("/{$T_DIR}elif\s+(.*)/", $line, $matches)) {
-                $cpp->std_elif($line, $matches);
-
-            } elseif (preg_match("/{$T_DIR}endif/", $line, $matches)) {
-                $cpp->std_endif($line, $matches);
-
-            } elseif (preg_match("/{$T_DIR}else/", $line, $matches)) {
-                $cpp->std_else($line, $matches);
-
-            } elseif (preg_match("/{$T_DIR}ifdef\s+(.*)/", $line, $matches)) {
-                $cpp->std_ifdef($line, $matches);
-
-            } elseif (preg_match("/{$T_DIR}ifndef\s+(.*)/", $line, $matches)) {
-                $cpp->std_ifndef($line, $matches);
-
-            } elseif (preg_match("/{$T_DIR}include\s+(.*)/", $line, $matches)) {
-                $cpp->std_include($line, $matches);
-
-            } elseif (preg_match("/{$T_DIR}undef\s+(.*)/", $line, $matches)) {
-                $cpp->std_undef($line, $matches);
-
-            } elseif (preg_match("/{$T_DIR}pragma\s+(.*)/", $line, $matches)) {
-                $cpp->std_pragma($line, $matches);
-
-            } elseif (preg_match("/{$T_DIR}error\s*(.*)/", $line, $matches)) {
-                $cpp->std_error($line, $matches);
-
+            $f_matched = false;
+            foreach ($cpp->getRules() as $rule => $func_name) {
+                if (preg_match(str_replace('{T_DIR}',  $T_DIR, $rule), $line, $matches)) {
+                    $cpp->$func_name($line, $matches);
+                    $f_matched = true;
+                    break;
+                }
             }
 
             //
             // Extensions (not provided by the C++ preprocessor)
             //
+
+            if ($f_matched) { /* Nothing to do for now */ }
 
             elseif (preg_match("/{$T_EXT}require\s+([^;]+);/", $line, $matches)) {
                 $file = trim($matches[1], '<">');
