@@ -24,22 +24,28 @@ if [ "$1" != "" ] ; then
         echo "[-] Removing old output ./output/a.out"
       rm ./output/a.out
     fi
+
     if [ -e ./output/$1.out ] ; then
         echo "[-] Removing old output ./output/$1.out"
         rm ./output/$1.out
     fi
 
+    if [ -e ./output/$1.php ] ; then
+        echo "[-] Removing old output ./output/$1.php"
+        rm ./output/$1.php
+    fi
+
     echo -e "*** ${BOLD}${Yellow} [ Running preprocessor ] ${RESET} ***"
     $PHP_EXE_NAME ./cpp_extension.php -o output/$1.out $1
+
+    if [ "$?" != "0" ] ; then
+        echo -e "${BOLD}${LightRed}[#] ERROR: Preprocessor error. Stop. $RESET"
+        exit 1
+    fi
 
     # clear empty lines
     grep -v '^$' output/$1.out > output/$1.out.tmp
     mv  output/$1.out.tmp output/$1.out
-
-    if [ "$?" == "1" ] ; then
-        echo -e "${BOLD}${LightRed}[#] ERROR: Preprocessor error. Stop. $RESET"
-        exit 1
-    fi
 
     if [ -e "output/$1.out" ] ; then
       echo "" # newline for better readability

@@ -73,7 +73,7 @@ set_error_handler('error_handler');
 // Utility functions
 //
 
-/** 
+/**
  * @param string $file
  * @param intger $line
  * @return string
@@ -121,7 +121,7 @@ function handle_backtrace(array $incl_result, string $file, int $line):void {
     }
 }
 
-/** 
+/**
  * Function to be called from the root of any includes, after calling track_include().
  *
  * @param array $incl_result
@@ -138,7 +138,7 @@ function get_debug_print_backtrace(array $incl_result):?array {
 /**
  * Camelize dash or underscore.
  * Credit to: JP Richardson (string.js) <jprichardson@gmail.com>
- * 
+ *
  * @param string $text
  * @return string
  */
@@ -152,7 +152,7 @@ function camelize(string $text):string {
 /**
  * Dasherize camel-case or studly caps.
  * Credit to: JP Richardson (string.js) <jprichardson@gmail.com>
- * 
+ *
  * @param string $text
  * @return string
  */
@@ -167,7 +167,7 @@ function dasherize(string $text):string {
 /**
  * Underscore camel-case or studly caps.
  * Credit to: JP Richardson (string.js) <jprichardson@gmail.com>
- * 
+ *
  * @param string $text
  * @return string
  */
@@ -181,7 +181,7 @@ function underscore(string $text):string {
     return $st . strtolower($text);
 }
 
-/** 
+/**
  * @return boolean
  */
 function is_unittest():bool {

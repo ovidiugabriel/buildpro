@@ -100,10 +100,8 @@ define ('SEP_SEMICOLON', ';');
  * @param string $sep
  * @return void
  */
-function out(resource $fp, int $n_tabs, string $text, string $sep = null):void {
+function out(resource $fp, int $n_tabs, string $text, string $sep = SEP_SEMICOLON):void {
     static $file_started = false;
-
-    if (null === $sep) { $sep = SEP_SEMICOLON; }
 
     if (!$file_started) {
         //
@@ -195,7 +193,7 @@ function replace_defines(string $line, array $defines = array()):string {
  */
 function direct_write(resource $fp, string $text):int {
     if (strlen($text) > 0) {
-        return fwrite($fp, "println('$text');\n");
+        return fwrite($fp, "echo '$text' . \"\\n\";\n");
     }
     return 0;
 }
@@ -207,7 +205,7 @@ function direct_write(resource $fp, string $text):int {
  * @param string $artifact
  * @return void
  */
-function execute_output($artifact:string):void {
+function execute_output(string $artifact):void {
     $incl_result = include $artifact;
     if (is_array($incl_result)) {
         handle_backtrace($incl_result, 'Unknown', 0);
@@ -304,9 +302,8 @@ function main(int $argc, array $argv):int {
         }
 
         $outfd = fopen($OUTPUT, 'w');
-        var_dump($outfd);
 
-        if (false === $outfd || !is_resource($outfd)) {
+        if ((false === $outfd) || !is_resource($outfd)) {
             echo "Failed to open '$OUTPUT'\n";
 
             var_dump( error_get_last() );
@@ -377,12 +374,12 @@ function main(int $argc, array $argv):int {
             } elseif (preg_match("/{$T_DIR}ifdef\s+(.*)/", $line, $matches)) {
                 $last_id = uniqid();
                 array_push($stack, $last_id);
-                out($outfd, count($stack)-1, "if (defined('$matches[2]')):");
+                out($outfd, count($stack)-1, "if (defined('$matches[2]')) {", NO_SEP);
 
             } elseif (preg_match("/{$T_DIR}ifndef\s+(.*)/", $line, $matches)) {
                 $last_id = uniqid();
                 array_push($stack, $last_id);
-                out($outfd, count($stack)-1, "if (!defined('$matches[2]')):");
+                out($outfd, count($stack)-1, "if (!defined('$matches[2]')) {", NO_SEP);
 
             } elseif (preg_match("/{$T_DIR}include\s+(.*)/", $line, $matches)) {
                 $file = trim($matches[1], '<">');
@@ -432,7 +429,7 @@ function main(int $argc, array $argv):int {
             //
             elseif (preg_match("/{$T_EXT}lang\s*\[?[\"\']?([A-Za-z_][A-Za-z0-9_]+)[\"\']?\]?/", $line, $matches)) {
                 $lang = $matches[1];
-                out ($outfd, 0, "require_once '{$lang}.lang.php'; /* $line */");
+                out ($outfd, 0, "require_once '{$lang}.lang.php'");
             }
 
             elseif (preg_match("/{$T_EXT}header-code\s*\{(.*)\}/", $line, $matches)) {
