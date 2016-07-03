@@ -258,8 +258,8 @@ class Cpp {
     public ?string $last_id = null;
     public array $defines = array();
 
-    public function __construct() {
-        $this->outfd = $GLOBALS['outfd'];
+    public function __construct(resource $outfd) {
+        $this->outfd = $outfd;
     }
 
     public function getRules() {
@@ -403,7 +403,7 @@ function main(int $argc, array $argv):int {
         }
         $GLOBALS['outfd'] = $outfd;
 
-        $cpp = new Cpp();
+        $cpp = new Cpp($outfd);
 
         if ($INCLUDE_PATH = getenv('INCLUDE_PATH')) {
             out ($outfd, 0, "ini_set('include_path', ini_get('include_path') . '" . PATH_SEPARATOR . $INCLUDE_PATH . "')");
