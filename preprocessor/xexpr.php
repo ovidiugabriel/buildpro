@@ -1,5 +1,7 @@
 <?php
 
+const DEBUG = 0;
+
 interface IParser {
     public function endElement($tag);
     public function startElement($tag);
@@ -19,7 +21,8 @@ class Parser extends stdClass implements IParser {
      * @return void
      */
     public function endElement($tag) {
-        $this->output .= tab(count($this->stack)) . "</$tag>\n";
+        if (DEBUG) echo __FUNCTION__ . "('$tag')\n";
+        $this->output .= tab(count($this->stack)-1) . "</$tag>\n";
         array_pop($this->stack);
     }
 
@@ -28,8 +31,9 @@ class Parser extends stdClass implements IParser {
      * @return void
      */
     public function startElement($tag) {
+        if (DEBUG) echo __FUNCTION__ . "('$tag')\n";
         $this->stack[] = $tag;
-        $this->output .= tab(count($this->stack)) . "<$tag>\n";
+        $this->output .= tab(count($this->stack)-1) . "<$tag>\n";
     }
 
     /** 
@@ -37,7 +41,8 @@ class Parser extends stdClass implements IParser {
      * @return void
      */
     public function characterData($string) {
-        $this->output .= tab(count($this->stack)+1) . $string . "\n";
+        if (DEBUG) echo __FUNCTION__ . "('$string')\n";
+        $this->output .= tab(count($this->stack)) . $string . "\n";
     }
 
     /** 
@@ -47,7 +52,6 @@ class Parser extends stdClass implements IParser {
         return $this->output;
     }
 }
-
 
 if (!function_exists('tab')) {
     /**
@@ -94,9 +98,11 @@ function xexpr_to_xml($input, IParser $parser) {
                 break;
 
             case ' ':
+            case "\n":
                 if (State::CONS == $state) {
                     $state = State::START;
                     $parser->startElement($cons);
+                    if (DEBUG) echo ":array_push(stack, '$cons')\n";
                     $stack[] = $cons;
                     $cons = '';
                 }
