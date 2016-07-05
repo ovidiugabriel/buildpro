@@ -8,23 +8,41 @@ interface IParser {
 }
 
 class Parser extends stdClass implements IParser {
+    /** @var array */
     private $stack = array();
+
+    /** @var string */
     private $output = '';
 
+    /** 
+     * @param string $tag 
+     * @return void
+     */
     public function endElement($tag) {
         $this->output .= tab(count($this->stack)) . "</$tag>\n";
         array_pop($this->stack);
     }
 
+    /** 
+     * @param string $tag
+     * @return void
+     */
     public function startElement($tag) {
         $this->stack[] = $tag;
         $this->output .= tab(count($this->stack)) . "<$tag>\n";
     }
 
+    /** 
+     * @param string $string
+     * @return void
+     */
     public function characterData($string) {
         $this->output .= tab(count($this->stack)+1) . $string . "\n";
     }
 
+    /** 
+     * @return string
+     */
     public function __toString() {
         return $this->output;
     }
@@ -32,13 +50,18 @@ class Parser extends stdClass implements IParser {
 
 
 if (!function_exists('tab')) {
-function tab($size) {
-    $result = '';
-    for ($i = 0; $i < $size; $i++) {
-        $result .= "    ";  // a tab is 4 spaces
+    /**
+     * @param integer $size
+     * @return string
+     */
+    function tab($size) {
+        $result = '';
+        for ($i = 0; $i < $size; $i++) {
+            $result .= "    ";  // a tab is 4 spaces
+        }
+        return $result;
     }
-    return $result;
-}} /* function=tab */
+} /* function=tab */
 
 class State {
     const STOP      = 0;    // The initial state, machine stopped
@@ -47,6 +70,11 @@ class State {
     const IN_STRING = 3;    // Reading a string 
 }
 
+/** 
+ * @param string $input
+ * @param IParser $parser
+ * @return IParser
+ */
 function xexpr_to_xml($input, IParser $parser) {
     $state  = State::STOP;
     $cons   = '';
@@ -99,14 +127,6 @@ function xexpr_to_xml($input, IParser $parser) {
     return $parser;
 }
 
-//
-// Usage Example:
-//
-/*
-      $input = '
-          (html
-              (head (title "Hello") )
-              (body "Hi!")
-          )';
-      echo xexpr_to_xml($input, new Parser());
-*/
+if (isset($argv[1])) {
+    echo xexpr_to_xml(file_get_contents($argv[1]), new Parser());
+}
