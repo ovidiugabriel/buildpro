@@ -1,5 +1,10 @@
 <?php
 
+//
+// Compare with:
+//
+//      racket xexpr.rkt in.s | xmllint --format -
+
 const DEBUG = 0;
 
 interface IParser {
@@ -22,8 +27,10 @@ class Parser extends stdClass implements IParser {
      */
     public function endElement($tag) {
         if (DEBUG) echo __FUNCTION__ . "('$tag')\n";
-        $this->output .= tab(count($this->stack)-1) . "</$tag>\n";
-        array_pop($this->stack);
+        if (count((array) $this->stack) > 0) {
+            $this->output .= "</$tag>";
+            array_pop($this->stack);
+        }
     }
 
     /** 
@@ -33,7 +40,7 @@ class Parser extends stdClass implements IParser {
     public function startElement($tag) {
         if (DEBUG) echo __FUNCTION__ . "('$tag')\n";
         $this->stack[] = $tag;
-        $this->output .= tab(count($this->stack)-1) . "<$tag>\n";
+        $this->output .= "<$tag>";
     }
 
     /** 
@@ -42,7 +49,7 @@ class Parser extends stdClass implements IParser {
      */
     public function characterData($string) {
         if (DEBUG) echo __FUNCTION__ . "('$string')\n";
-        $this->output .= tab(count($this->stack)) . $string . "\n";
+        $this->output .= $string;
     }
 
     /** 
@@ -52,20 +59,6 @@ class Parser extends stdClass implements IParser {
         return $this->output;
     }
 }
-
-if (!function_exists('tab')) {
-    /**
-     * @param integer $size
-     * @return string
-     */
-    function tab($size) {
-        $result = '';
-        for ($i = 0; $i < $size; $i++) {
-            $result .= "    ";  // a tab is 4 spaces
-        }
-        return $result;
-    }
-} /* function=tab */
 
 class State {
     const STOP      = 0;    // The initial state, machine stopped
@@ -94,7 +87,9 @@ function xexpr_to_xml($input, IParser $parser) {
 
             case ')':
                 $state = State::STOP;
-                $parser->endElement(array_pop($stack));
+                if (count($stack) > 0) {
+                    $parser->endElement(array_pop($stack));
+                }
                 break;
 
             case ' ':
