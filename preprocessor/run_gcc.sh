@@ -21,7 +21,7 @@ if [ "$1" != "" ] ; then
       mkdir output
     fi
     if [ -e ./output/a.out ] ; then
-        echo "[-] Removing old output ./output/a.out"
+      echo "[-] Removing old output ./output/a.out"
       rm ./output/a.out
     fi
 

@@ -137,29 +137,6 @@ function tab(int $size):string {
     return $result;
 }
 
-/**
- * Emits a preprocessing error.
- *
- * @param integer $n_tabs
- * @param string $text
- * @param string $detail
- * @return void
- * @global  $INPUT
- * @global  $LINE_NUMBER
- */
-function error(int $n_tabs, string $text):void {
-    $LINE_NUMBER = (int) $GLOBALS['LINE_NUMBER'];
-    $INPUT       = $GLOBALS['INPUT'];
-
-    assert($GLOBALS['outfd']);
-
-    //
-    // C++ specific error.
-    //
-    direct_write($GLOBALS['outfd'], tab($n_tabs) . "#line {$LINE_NUMBER} \"{$INPUT}\"");
-    direct_write($GLOBALS['outfd'], tab($n_tabs) . '#error '. $text);
-}
-
 /** 
  * This function application results in decorator to be used in the generated code
  * to get the value of the defined constant name.
@@ -235,7 +212,6 @@ function pp_error_handler(int $code, string $message, string $file, int $line):v
     echo "#line {$line} \"".basename($file)."\"\n";
     echo "#error \"{$message}\"\n";
 
-    debug_print_backtrace();
     die;
 }
 set_error_handler('pp_error_handler');
@@ -253,13 +229,34 @@ function run_preprocessor(string $input):string {
 
 class Cpp {
 
-    private resource $outfd;
+    public resource $outfd;
     public array $stack = array();
     public ?string $last_id = null;
     public array $defines = array();
 
     public function __construct(resource $outfd) {
         $this->outfd = $outfd;
+    }
+
+    /**
+     * Emits a preprocessing error.
+     *
+     * @param integer $n_tabs
+     * @param string $text
+     * @param string $detail
+     * @return void
+     * @global  $INPUT
+     * @global  $LINE_NUMBER
+     */
+    private function error(int $n_tabs, string $text):void {
+        $LINE_NUMBER = (int) $GLOBALS['LINE_NUMBER'];
+        $INPUT       = $GLOBALS['INPUT'];
+
+        //
+        // C++ specific error.
+        //
+        direct_write($this->outfd, tab($n_tabs) . "#line {$LINE_NUMBER} \"{$INPUT}\"");
+        direct_write($this->outfd, tab($n_tabs) . '#error '. $text);
     }
 
     public function getRules() {
@@ -324,15 +321,15 @@ class Cpp {
     }
 
     public function std_undef(string $line, array $matches):void {
-        error(count($this->stack), 'undef is not allowed here');
+        $this->error(count($this->stack), 'undef is not allowed here');
     }
 
     public function std_pragma(string $line, array $matches):void {
-        error(count($this->stack), 'pragma is not allowed here');
+        $this->error(count($this->stack), 'pragma is not allowed here');
     }
 
     public function std_error(string $line, array $matches):void {
-        error(count($this->stack), trim($matches[2], '"'));
+        $this->error(count($this->stack), trim($matches[2], '"'));
     }
 }
 
@@ -393,24 +390,27 @@ function main(int $argc, array $argv):int {
             return 1;
         }
 
-        $outfd = fopen($OUTPUT, 'w');
+        $cpp = new Cpp(fopen($OUTPUT, 'w'));
 
-        if ((false === $outfd) || !is_resource($outfd)) {
+        //
+        // In Hack language outfd is typed as resource
+        // so there is not need to check if it is a resource or 
+        // 'Identical' (triple equal) comparison with boolean false
+        //
+
+        if (!$cpp->outfd) {
             echo "Failed to open '$OUTPUT'\n";
 
             var_dump( error_get_last() );
             die;
         }
-        $GLOBALS['outfd'] = $outfd;
-
-        $cpp = new Cpp($outfd);
 
         if ($INCLUDE_PATH = getenv('INCLUDE_PATH')) {
-            out ($outfd, 0, "ini_set('include_path', ini_get('include_path') . '" . PATH_SEPARATOR . $INCLUDE_PATH . "')");
+            out ($cpp->outfd, 0, "ini_set('include_path', ini_get('include_path') . '" . PATH_SEPARATOR . $INCLUDE_PATH . "')");
         }
 
-        out ($outfd, 0, '$INPUT = "'.trim($INPUT, '.\\/').'"');
-        out ($outfd, 0, "ob_start()");
+        out ($cpp->outfd, 0, '$INPUT = "'.trim($INPUT, '.\\/').'"');
+        out ($cpp->outfd, 0, "ob_start()");
 
         $LINE_NUMBER = 0;
 
@@ -420,9 +420,9 @@ function main(int $argc, array $argv):int {
         while ($line = fgets($fp)) {
             $LINE_NUMBER++;
 
-            direct_write($outfd, "");
-            out ($outfd, 0, '$LINE_NUMBER = ' . $LINE_NUMBER);
-            direct_write($outfd, "#line {$LINE_NUMBER} \"{$INPUT}\"");
+            direct_write($cpp->outfd, "");
+            out ($cpp->outfd, 0, '$LINE_NUMBER = ' . $LINE_NUMBER);
+            direct_write($cpp->outfd, "#line {$LINE_NUMBER} \"{$INPUT}\"");
 
             $line       = rtrim($line);
             $cpp->last_id    = (count($cpp->stack) > 0) ? $cpp->stack[count($cpp->stack)-1] : '';
@@ -460,7 +460,7 @@ function main(int $argc, array $argv):int {
 
             elseif (preg_match("/{$T_EXT}require\s+([^;]+);/", $line, $matches)) {
                 $file = trim($matches[1], '<">');
-                out($outfd, count($cpp->stack), "require '$file'");
+                out($cpp->outfd, count($cpp->stack), "require '$file'");
 
             }
 
@@ -468,18 +468,18 @@ function main(int $argc, array $argv):int {
                 $file = str_replace('.', '/', trim($matches[1], '<">'));
 
                 $filepath  = "lib/$file.scrbl";
-                out($outfd, count($cpp->stack), sprintf("require_once '%s'", run_preprocessor($filepath)));
+                out($cpp->outfd, count($cpp->stack), sprintf("require_once '%s'", run_preprocessor($filepath)));
             }
 
             elseif (preg_match("/{$T_EXT}require_once\s+([^;]+);/", $line, $matches)) {
                 $file = trim($matches[1], '<">');
-                out($outfd, count($cpp->stack), "require_once '$file'");
+                out($cpp->outfd, count($cpp->stack), "require_once '$file'");
 
             }
 
             elseif (preg_match("/{$T_DIR}lang (.*)/", $line, $matches)) {
                 // Ignore pure Racket syntax for lang directive
-                out ($outfd, 0, "/*  $line */");
+                out ($cpp->outfd, 0, "/*  $line */");
             }
 
             //
@@ -487,18 +487,18 @@ function main(int $argc, array $argv):int {
             //
             elseif (preg_match("/{$T_EXT}lang\s*\[?[\"\']?([A-Za-z_][A-Za-z0-9_]+)[\"\']?\]?/", $line, $matches)) {
                 $lang = $matches[1];
-                out ($outfd, 0, "require_once '{$lang}.lang.php'");
+                out ($cpp->outfd, 0, "require_once '{$lang}.lang.php'");
             }
 
             elseif (preg_match("/{$T_EXT}header-code\s*\{(.*)\}/", $line, $matches)) {
-                direct_write($outfd, trim($matches[1]));
+                direct_write($cpp->outfd, trim($matches[1]));
 
             }
 
             // Arguments are not needed.
             elseif (preg_match("/{$T_EXT}debug_print_backtrace/", $line, $matches)) {
                 // out ($outfd, 0, 'return array("debug_print_backtrace()" . called_at("'.$INPUT.'", $LINE_NUMBER)); ' . "/* $line */");
-                out ($outfd, count($cpp->stack), 'debug_print_backtrace()');
+                out ($cpp->outfd, count($cpp->stack), 'debug_print_backtrace()');
             }
 
     /*
@@ -524,7 +524,7 @@ function main(int $argc, array $argv):int {
             */
 
             else {
-                direct_write($outfd, replace_defines($line, $cpp->defines));
+                direct_write($cpp->outfd, replace_defines($line, $cpp->defines));
             }
 
             //
@@ -539,10 +539,10 @@ function main(int $argc, array $argv):int {
                 mkdir($dir, 0777, true);
             }
 
-            out ($outfd, 0, "file_put_contents('$final_output', ob_get_clean())");
+            out ($cpp->outfd, 0, "file_put_contents('$final_output', ob_get_clean())");
         }
 
-        fclose($outfd);
+        fclose($cpp->outfd);
         fclose($fp);
 
         if (isset($opts['php'])) {
