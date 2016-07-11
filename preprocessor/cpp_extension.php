@@ -76,6 +76,7 @@
 /*                                                                           */
 
 require_once 'Preprocessor.class.php';
+require_once 'Cpp.class.php';
 
 /*                                                                           */
 /* USER DEFINED CONSTANTS                                                    */
@@ -197,91 +198,6 @@ function run_preprocessor(string $input):string {
     $cmd = sprintf('%s %s --php=%s %s', PHP_EXE_NAME, __FILE__, $output, $input);
     echo shell_exec($cmd);
     return $output;
-}
-
-class Cpp {
-
-    public array $stack = array();
-    public ?string $last_id = null;
-    public array $defines = array();
-    private Preprocessor $pp;
-
-    public function __construct(Preprocessor $pp) {
-        $this->pp = $pp;
-    }
-
-    public function getRules() {
-        //
-        // Rules for the replacement of standard C++ preprocessor
-        //
-        return array(
-            "/{T_DIR}define\s+([^\s]+)\s*(.*)/" =>  'std_define',
-            "/{T_DIR}if\s+(.*)/"                =>  'std_if',
-            "/{T_DIR}elif\s+(.*)/"              =>  'std_elif',
-            "/{T_DIR}endif/"                    =>  'std_endif',
-            "/{T_DIR}else/"                     =>  'std_else',
-            "/{T_DIR}ifdef\s+(.*)/"             =>  'std_ifdef',
-            "/{T_DIR}ifndef\s+(.*)/"            =>  'std_ifndef',
-            "/{T_DIR}include\s+(.*)/"           =>  'std_include',
-            "/{T_DIR}undef\s+(.*)/"             =>  'std_undef',
-            "/{T_DIR}pragma\s+(.*)/"            =>  'std_pragma',
-            "/{T_DIR}error\s*(.*)/"             =>  'std_error',
-        );
-    }
-
-    public function std_define(string $line, array $matches):void {
-        $this->pp->out(count($this->stack), "define('$matches[2]', '$matches[3]')");
-        $this->defines[$matches[2]] = define_decorator($matches[2]);
-    }
-
-    public function std_if(string $line, array $matches):void {
-        $this->last_id = uniqid();
-        array_push($this->stack, $this->last_id);
-        $this->pp->out(count($this->stack)-1, "if ($matches[2]) {", NO_SEP);
-    }
-
-    public function std_elif(string $line, array $matches):void {
-        $matches[1] = preg_replace('/defined\((.*)\)/', "defined('$1')", $matches[1]);
-        $this->pp->out(count($this->stack)-1, "elseif ($matches[2]):");
-    }
-
-    public function std_endif(string $line, array $matches):void {
-        $this->pp->out(count($this->stack)-1, "}", NO_SEP);
-        array_pop($this->stack);
-    }
-
-    public function std_else(string $line, array $matches):void {
-        $this->pp->out(count($this->stack)-1, "else:");
-    }
-
-    public function std_ifdef(string $line, array $matches):void {
-        $this->last_id = uniqid();
-        array_push($this->stack, $this->last_id);
-        $this->pp->out(count($this->stack)-1, "if (defined('$matches[2]')) {", NO_SEP);
-    }
-
-    public function std_ifndef(string $line, array $matches):void {
-        $this->last_id = uniqid();
-        array_push($this->stack, $this->last_id);
-        $this->pp->out(count($this->stack)-1, "if (!defined('$matches[2]')) {", NO_SEP);
-    }
-
-    public function std_include(string $line, array $matches):void {
-        $file = trim($matches[1], '<">');
-        $this->pp->out(count($this->stack), "require '$file'");
-    }
-
-    public function std_undef(string $line, array $matches):void {
-        $this->pp->error(count($this->stack), 'undef is not allowed here');
-    }
-
-    public function std_pragma(string $line, array $matches):void {
-        $this->pp->error(count($this->stack), 'pragma is not allowed here');
-    }
-
-    public function std_error(string $line, array $matches):void {
-        $this->pp->error(count($this->stack), trim($matches[2], '"'));
-    }
 }
 
 /** 
