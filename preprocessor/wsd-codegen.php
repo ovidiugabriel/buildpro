@@ -5,11 +5,39 @@
 # To understand terminology: http://www.uml-diagrams.org/sequence-diagrams.html#lifeline
 #
 
+define ('TAB', '    ');
+
 function createInstance($className, $objectName = null) {
     if (!$objectName) {
         $objectName = strtolower($className);
     }
     return "{$className}* {$objectName} = new {$className}()";
+}
+
+function generateMainMethod($method) {
+    global $participants;
+
+    list ($main_participant, $main_func) = explode('::', $method);
+
+    $out = '';
+    $out .= "int {$method}() {\n";
+    foreach ($participants[$main_participant] as $node) {
+        $out .= TAB . $node->generate();
+    }
+    $out .= "}\n\n";
+    return $out;
+}
+
+//
+// This method is useful only for C/C++ where the entry point cannot be defined as a method
+// in a class
+//
+function createEntryPoint($method) {
+    $out = '';
+    $out .= "int main(int argc, char* argv[]) {\n";
+    $out .= TAB . "return $method();\n";
+    $out .= "}\n\n";
+    return $out;
 }
 
 class Node {
@@ -73,88 +101,100 @@ class EndNode extends Node {
 // Main code
 //
 
-$INPUT = $argv[1];
+$opts = getopt('', array('main:'));
+
+$INPUT = $argv[$argc-1];
 $fp = fopen($INPUT, 'r');
 if ($fp) {
 
-$participants = array();	// nume_actor => lista apeluri?...
+$participants = array();
+$sections = array(
+    'header' => array(),
+    'code'   => array(),
+);
 
-echo "int main(void) { \n";
 while ($line = fgets($fp)) {
     $line = trim($line);
     if (!$line) continue;
     echo "// $line \n";
     $matches = array();
 
+    $node = null;
+
     // Finish occurrence {finish}
     if (preg_match('/^\s*(.*)\s*(-->-)\s*(.*)\s*:\s*(.*)\s*$/', $line, $matches)) {
         $node = new Node($matches[2], $matches[1], $matches[3], $matches[4]);
-
     }
 
     // Return message {return}
     elseif (preg_match('/^\s*(.*)\s*(-->)\s*(.*)\s*:\s*(.*)\s*$/', $line, $matches)) {
         $node = new Node($matches[2], $matches[1], $matches[3], $matches[4]);
-
     }
 
     // Start occurrence {start}
     elseif (preg_match('/^\s*(.*)\s*(->\+)\s*(.*)\s*:\s*(.*)\s*$/', $line, $matches)) {
         $node = new Node($matches[2], $matches[1], $matches[3], $matches[4]);
-
     }
 
     // Object creation message {create}
     elseif (preg_match('/^\s*(.*)\s*(->\*)\s*(.*)\s*:\s*(.*)\s*$/', $line, $matches)) {
         $node = new Node($matches[2], $matches[1], $matches[3], $matches[4]);
-
     }
 
     // (Synchronous) message {call}
     elseif (preg_match('/^\s*(.*)\s*(->)\s*(.*)\s*:\s*(.*)\s*$/', $line, $matches)) {
         $node = new Node($matches[2], $matches[1], $matches[3], $matches[4]);
-
     }
 
     elseif (preg_match('/^(destroy)\s+(.*)$/', $line, $matches)) {
         $node = new DestroyNode($matches[2]);
-
     }
 
     elseif (preg_match('/^(alt)\s+(.*)$/', $line, $matches)) {
         $node = new AltNode($matches[1], $matches[2]);
-
     }
 
     elseif (preg_match('/^(else)\s+(.*)$/', $line, $matches)) {
         $node = new AltNode($matches[1], $matches[2]);
-
     }
 
     elseif (preg_match('/^(end)$/', $line, $matches)) {
         $node = new EndNode();
-
     }
 
     elseif (preg_match('/^(opt)\s+(.*)$/', $line, $matches)) {
         $node = new AltNode($matches[1], $matches[2]);
-
     }
 
     elseif (preg_match('/^(loop)\s+(.*)$/', $line, $matches)) {
         $node = new AltNode($matches[1], $matches[2]);
-
     }
 
     elseif (preg_match('/^(participant)\s+(.*)$/', $line, $matches)) {
-        $node = new Node($matches[1], null, null, $matches[2]);
+        $participant = new Node($matches[1], null, null, $matches[2]);
+        $sections['header'][] = $participant;
+        $participants[$matches[2]] = array();
     }
 
-    else { continue; }
+    else {
+        // The line is not recognized by the language
+        continue;
+    }
 
-    echo '// ' . json_encode($node), "\n";
-    echo $node->generate() . "\n";
+    if ($node) {
+        $participants[$node->from][] = $node;
+    }
+} // end-while
+
+// Generate header code
+foreach ($sections['header'] as $hdr_node) {
+    echo $hdr_node->generate();
+}
+echo "\n";
+
+if (isset($opts['main'])) {
+    echo generateMainMethod($opts['main']);
+    echo createEntryPoint($opts['main']);
 }
 
-echo "return 0; } \n";
-}
+} // end-if
