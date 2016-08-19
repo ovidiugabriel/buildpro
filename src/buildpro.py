@@ -125,7 +125,7 @@ def proto():
     functions = []
     with open(filename, 'r') as fileh:
         for line in fileh:
-            m = re.search('@proto\s+(static|\.?)\s*(public|private|[\+\#\~\-]?)\s*(.*)', line.rstrip())
+            m = re.search('@proto\s+(static|\.?)\s*(public|private|protected|[\+\#\~\-]?)\s*(.*)', line.rstrip())
             if None != m:
                 static = m.group(1)
                 if '.' == static:
@@ -133,8 +133,14 @@ def proto():
 
                 if static != '':
                     static += ' '
+
+                #
+                # Haxe has no notion of a protected keyword known from Java, C++ and other object-oriented languages.
+                # However, its private behavior is equal to those language's protected behavior, 
+                # so Haxe actually lacks their real private behavior.
+                #
                 visibility = m.group(2)
-                if ('#' == m.group(2)) or ('-' == m.group(2)) or ('~' == m.group(2)):
+                if ('#' == visibility) or ('-' == visibility) or ('~' == visibility) or ('protected' == visibility):
                     visibility = 'private'
                 if '+' == m.group(2):
                     visibility = 'public'
