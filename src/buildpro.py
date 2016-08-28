@@ -120,6 +120,16 @@ def proto():
     package_name = '.'.join(pkg)
 
     buildpro_print('proto ' + lang)
+    
+    # phpDocumentor style tags like @param type $var or @return type
+    # can be automatically translated to their Haxe counterparts
+    phpdoc_hx_types = {
+        'mixed'  : 'Dynamic',
+        'array'  : 'php.NativeArray',
+        'integer': 'Int',
+        'boolean': 'Bool',
+        'string' : 'String'
+    }
 
     # Read all @proto annotations
     functions = []
