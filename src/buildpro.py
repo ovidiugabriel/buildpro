@@ -48,7 +48,9 @@ import yaml
 import re
 import json
 import platform
+
 from compiler.base import compiler_base
+from prototyping import proto
 
 # Some 'contants' definitions
 BOLD="\033[1m"
@@ -90,7 +92,7 @@ def buildpro_print(text):
 #
 def buildpro_exit(code):
     print('Bye. [exit ' + str(code) + ']')
-    exit(code)
+    exit(int(code))
 
 def get_inline_command(filename):
     with open(filename, 'r') as f:
@@ -103,74 +105,6 @@ def get_inline_command(filename):
                     cmd = cmd.replace('__FILE__', filename)
                     return cmd
     return ""
-
-def proto():
-    if len(sys.argv) < 5:
-        print('Error: Invalid command line.')
-        print('Usage: -proto <lang> <class> <inputFile> <outputFile>')
-        buildpro_exit(1)
-
-    lang            = sys.argv[2].strip()
-    full_class_name = sys.argv[3].strip()
-    filename        = sys.argv[4].strip()
-    outfile         = sys.argv[5].strip()
-
-    pkg = sys.argv[3].strip().split('.')
-    class_name = pkg.pop()
-    package_name = '.'.join(pkg)
-
-    buildpro_print('proto ' + lang)
-    
-    # phpDocumentor style tags like @param type $var or @return type
-    # can be automatically translated to their Haxe counterparts
-    phpdoc_hx_types = {
-        'mixed'  : 'Dynamic',
-        'array'  : 'php.NativeArray',
-        'integer': 'Int',
-        'boolean': 'Bool',
-        'string' : 'String'
-    }
-
-    # Read all @proto annotations
-    functions = []
-    with open(filename, 'r') as fileh:
-        for line in fileh:
-            m = re.search('@proto\s+(static|\.?)\s*(public|private|protected|[\+\#\~\-]?)\s*(.*)', line.rstrip())
-            if None != m:
-                static = m.group(1)
-                if '.' == static:
-                    static = 'static'
-
-                if static != '':
-                    static += ' '
-
-                #
-                # Haxe has no notion of a protected keyword known from Java, C++ and other object-oriented languages.
-                # However, its private behavior is equal to those language's protected behavior, 
-                # so Haxe actually lacks their real private behavior.
-                #
-                visibility = m.group(2)
-                if ('#' == visibility) or ('-' == visibility) or ('~' == visibility) or ('protected' == visibility):
-                    visibility = 'private'
-                if '+' == m.group(2):
-                    visibility = 'public'
-
-                if visibility != '':
-                    visibility += ' '
-
-                proto = m.group(3)
-                functions.append(static + visibility + 'function ' + proto)
-
-    outfd = open(outfile, 'w')
-
-    outfd.write('package ' + package_name + ';\n\n')
-
-    outfd.write('extern class ' + class_name + ' {\n')
-    for func in functions:
-        outfd.write('    ' + func + ';\n')
-    outfd.write('} /* end class ' + full_class_name +' */')
-
-    outfd.close()
 
 """
     https://sublime-text-unofficial-documentation.readthedocs.org/en/latest/file_management/file_management.html\
@@ -219,7 +153,10 @@ if '-inline' == sys.argv[1].strip():
     buildpro_exit(0)
 
 if '-proto' == sys.argv[1].strip():
-    proto()
+    try:
+        proto(buildpro_print, sys.argv)
+    except Exception as ex:
+        buildpro_exit(int(str(ex)))
     buildpro_exit(0)
 
 if '-sublime-project' == sys.argv[1].strip():
