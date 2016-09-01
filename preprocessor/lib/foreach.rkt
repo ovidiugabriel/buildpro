@@ -13,7 +13,7 @@
 
 (provide foreach)
 
-(define (tab n) (build-string (* 4 n) (lambda (i) #\ )))
+(define (tab n) (build-string (* 4 n) (λ (i) #\ )))
 
 (define nl (~a #\newline))
 
@@ -29,7 +29,7 @@
 
 (define (foreach all block) 
   (define arg (string-split all " "))
-  ((lambda (type e v)
+  ((λ (type e v)
      (string-append
       "{" nl
       (tab 2) "int n = " (type-len type) "(" v ");" nl
@@ -41,4 +41,4 @@
       (tab 2) "}"
       )
      ) (first arg) (second arg) (third arg) )
-  )
+)
