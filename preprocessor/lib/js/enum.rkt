@@ -5,6 +5,5 @@
                  (string-join
                   (map (λ (cns)
                          (string-append "\"" (~a (car cns)) "\" : " (~a (cdr cns)))
-                         ) ml) ", \n") "\n};")
+                         ) lst) ", \n") "\n};")
   )
-  
