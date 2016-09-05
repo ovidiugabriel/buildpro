@@ -37,16 +37,13 @@ def proto(buildpro_print, argv):
         print('Usage: -proto <lang> <class> <inputFile> <outputFile>')
         raise Exception(1)
 
-    lang            = argv[2].strip()
-    full_class_name = argv[3].strip()
-    filename        = argv[4].strip()
-    outfile         = argv[5].strip()
+    (_, _, lang, full_class_name, filename, outfile) = map(str.strip, argv)
 
-    pkg = argv[3].strip().split('.')
-    class_name = pkg.pop()
+    pkg          = full_class_name.split('.')
+    class_name   = pkg.pop()
     package_name = '.'.join(pkg)
 
-    buildpro_print('proto ' + lang)
+    buildpro_print('prototyping ' + lang)
 
     # Read all @proto annotations
     functions = []
@@ -89,4 +86,3 @@ def proto(buildpro_print, argv):
     outfd.write('} /* end class ' + full_class_name +' */' + "\n")
 
     outfd.close()
-
