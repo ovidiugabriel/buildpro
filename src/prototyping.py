@@ -24,7 +24,6 @@ def parse_tags(inp, functions):
     matches = re.findall(r"\/\*\*(.*?)\*\/(.*?)function\s+(.*?)\((.*?)\)", inp, re.MULTILINE | re.DOTALL)
     for match in matches:
         proto_m = re.findall("(@proto\s+.*)", match[0])
-        # print(proto_m)
         if len(proto_m) > 0:
             proto_line(proto_m[0], functions)
         else:
