@@ -103,8 +103,6 @@ def proto(buildpro_print, argv):
 
 if __name__ == "__main__":
     try:
-        def buildpro_print(x):
-            print(x)
-        proto(buildpro_print, sys.argv)
+        proto(lambda x: print(x), sys.argv)
     except Exception as ex:
         exit(int(str(ex)))
