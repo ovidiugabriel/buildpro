@@ -5,8 +5,6 @@
 //
 //      racket xexpr.rkt in.s | xmllint --format -
 
-const DEBUG = 0;
-
 interface IParser {
     public function endElement($tag);
     public function startElement($tag);
@@ -26,7 +24,6 @@ class Parser extends stdClass implements IParser {
      * @return void
      */
     public function endElement($tag) {
-        if (DEBUG) echo __FUNCTION__ . "('$tag')\n";
         if (count((array) $this->stack) > 0) {
             $this->output .= "</$tag>";
             array_pop($this->stack);
@@ -38,7 +35,6 @@ class Parser extends stdClass implements IParser {
      * @return void
      */
     public function startElement($tag) {
-        if (DEBUG) echo __FUNCTION__ . "('$tag')\n";
         $this->stack[] = $tag;
         $this->output .= "<$tag>";
     }
@@ -48,7 +44,6 @@ class Parser extends stdClass implements IParser {
      * @return void
      */
     public function characterData($string) {
-        if (DEBUG) echo __FUNCTION__ . "('$string')\n";
         $this->output .= $string;
     }
 
@@ -97,7 +92,6 @@ function xexpr_to_xml($input, IParser $parser) {
                 if (State::CONS == $state) {
                     $state = State::START;
                     $parser->startElement($cons);
-                    if (DEBUG) echo ":array_push(stack, '$cons')\n";
                     $stack[] = $cons;
                     $cons = '';
                 }
