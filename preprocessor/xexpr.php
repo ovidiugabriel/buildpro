@@ -5,18 +5,46 @@
 //
 //      racket xexpr.rkt in.s | xmllint --format -
 
+/**
+ * 
+ */
 interface IParser {
+    /** 
+     * @param string $tag
+     * @return void
+     */
     public function endElement($tag);
+    
+    /** 
+     * @param string $tag
+     * @return void
+     */
     public function startElement($tag);
+    
+    /** 
+     * @param string $string
+     * @return void
+     */
     public function characterData($string);
+    
+    /** 
+     * @return string
+     */
     public function __toString();
 }
 
+/** 
+ * @access public
+ */
 class Parser extends stdClass implements IParser {
-    /** @var array */
+    /** 
+     * @var array 
+     */
     private $stack = array();
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     private $output = '';
 
     /** 
@@ -55,6 +83,9 @@ class Parser extends stdClass implements IParser {
     }
 }
 
+/** 
+ * Enumeration of states.
+ */
 class State {
     const STOP      = 0;    // The initial state, machine stopped
     const CONS      = 1;    // Reading the function name
