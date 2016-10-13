@@ -3,3 +3,5 @@
 #
 # Home of Pharen Runtime: https://github.com/scriptor/pharen
 #
+class pharen_racket(compiler_base):
+  pass
