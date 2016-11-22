@@ -14,6 +14,7 @@
 
 (display (xexpr->string expression))
 
+;;
 ;; For example:
 ;; (xexpr->string '
 ;;               (html
@@ -25,3 +26,7 @@
 ;; Running this will output
 ;; $ racket html.rkt 
 ;; "<html><head><title>Hello</title></head><body>Hi!</body></html>"
+;; 
+;; Or put the following s-expression in a file:
+;; (html (head (title "Hello")) (body "Hi!")))
+;;
