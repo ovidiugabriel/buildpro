@@ -13,3 +13,15 @@
 (define expression (read in))
 
 (display (xexpr->string expression))
+
+;; For example:
+;; (xexpr->string '
+;;               (html
+;;                (head (title "Hello") )
+;;                (body "Hi!")
+;;                )
+;;               )
+;;
+;; Running this will output
+;; $ racket html.rkt 
+;; "<html><head><title>Hello</title></head><body>Hi!</body></html>"
