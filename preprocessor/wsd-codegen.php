@@ -4,9 +4,18 @@
 # https://www.websequencediagrams.com/
 # To understand terminology: http://www.uml-diagrams.org/sequence-diagrams.html#lifeline
 #
+# Use PlantUML (http://plantuml.com/starting) to convert WSD files to PNG
+# 
 
 define ('TAB', '    ');
 
+/** 
+ * Part of the C++ code generator
+ *
+ * @param string $className
+ * @param string $objectName
+ * @return string
+ */
 function createInstance($className, $objectName = null) {
     if (!$objectName) {
         $objectName = strtolower($className);
@@ -14,6 +23,12 @@ function createInstance($className, $objectName = null) {
     return "{$className}* {$objectName} = new {$className}()";
 }
 
+/** 
+ * Part of the C++ code generator
+ *
+ * @param string $method
+ * @return string
+ */
 function generateMainMethod($method) {
     global $participants;
 
@@ -28,10 +43,13 @@ function generateMainMethod($method) {
     return $out;
 }
 
-//
-// This method is useful only for C/C++ where the entry point cannot be defined as a method
-// in a class
-//
+/**
+ * This method is useful only for C/C++ where the entry point cannot be defined as a method
+ * in a class
+ *
+ * @param string $method
+ * @return string
+ */
 function createEntryPoint($method) {
     $out = '';
     $out .= "int main(int argc, char* argv[]) {\n";
@@ -63,7 +81,11 @@ class Node {
         if ($message) {$this->message = $message;}
     }
 
+    /**
+     *
+     */
     public function generate() {
+        // FIXME: Move this function to the C++ backend.
         switch ($this->type) {
             case 'call': {
                 $msg = $this->message;
