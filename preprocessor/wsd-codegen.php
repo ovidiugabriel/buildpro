@@ -9,24 +9,6 @@
 
 define ('TAB', '    ');
 
-class DestroyNode extends Node {
-    public function __construct($to) {
-        parent::__construct('destroy', null, $to, 'destroy');
-    }
-}
-
-class AltNode extends Node {
-    public function __construct($type, $message) {
-        parent::__construct($type, null, null, $message);
-    }
-}
-
-class EndNode extends Node {
-    public function __construct() {
-        parent::__construct('end');
-    }
-}
-
 //
 // Main code
 //
