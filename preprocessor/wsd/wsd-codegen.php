@@ -5,6 +5,7 @@
 # To understand terminology: http://www.uml-diagrams.org/sequence-diagrams.html#lifeline
 #
 # Use PlantUML (http://plantuml.com/starting) to convert WSD files to PNG
+# Run it like that: java -jar plantuml.jar sequenceDiagram.txt
 # 
 
 define ('TAB', '    ');
