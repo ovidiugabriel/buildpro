@@ -172,7 +172,7 @@ if '-sublime-workspace' == sys.argv[1].strip():
 #
 
 project_file = sys.argv[1].strip() + '.project.yml'
-stream = file(project_file, 'r')
+stream = open(project_file, 'r')
 data = yaml.load(stream)
 
 if data == None:
