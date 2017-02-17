@@ -119,6 +119,8 @@ cd PyYAML-3.11/
 sudo python setup.py install
 ```
 
+Note: On Windows the path of wget is something like:  `/cygdrive/c/Program\ Files/GnuWin32/bin/wget.exe`
+
 ###### Dependencies Scanning
 
 **Note:** For GCC dependencies can be generated with: ` gcc [options] -MM <name>.c -MF <name>.d  `
