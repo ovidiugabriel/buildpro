@@ -2,7 +2,7 @@
 
 import os
 
-buildpro_home = os.path.dirname(os.path.realpath(__file__))
+buildpro_home = os.path.dirname(os.path.realpath(__file__)).replace('\\', '\\\\')
 with open('buildpro', 'w') as file:
     file.write('#!/bin/bash\n')
     file.write('/bin/env python '+buildpro_home+'/src/buildpro.py $*\n')
