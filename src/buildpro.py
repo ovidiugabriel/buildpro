@@ -19,6 +19,7 @@
 #
 # Date         Name    Reason
 # -------------------------------------------------------------------------
+# 20.02.2017           Fixed Python3 exception syntax
 # 02.06.2016           Replaced enumerate() with values()
 # 03.03.2016           Fixed .exe target on Windows
 # 02.03.2016           Small final_cmd changes
@@ -197,7 +198,7 @@ if 'includes' in data:
             for value in data['includes'].values():
                 value = value.format(**env).replace('$', '')
                 compiler.append_include_path(value)
-        except KeyError, ex:
+        except KeyError as ex:
             print('Key Error: Undefined environment variable ${' + str(ex).strip("'") + '}')
             buildpro_exit(1)
 
