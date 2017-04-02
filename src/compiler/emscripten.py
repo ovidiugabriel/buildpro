@@ -4,5 +4,5 @@
 #
 # https://kripken.github.io/emscripten-site/
 #
-class emscripten(compiler_base):
+class compiler_emscripten(compiler_base):
   pass
