@@ -5,3 +5,5 @@
 #
 # https://wiki.gnome.org/Projects/Vala
 #
+class compiler_vala(compiler_base):
+  pass
