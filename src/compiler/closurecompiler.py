@@ -3,5 +3,5 @@
 # The Closure Compiler application is a Java command-line utility that compresses, 
 # optimizes, and looks for mistakes in your JavaScript.
 #
-class closure_compiler(compiler_base):
+class compiler_closurecompiler(compiler_base):
   pass
