@@ -3,5 +3,5 @@
 # Supports: C, Objective C, C++, and Objective C++
 # http://clang.llvm.org/
 #
-class clang(compiler_base):
+class compiler_clang(compiler_base):
   pass
