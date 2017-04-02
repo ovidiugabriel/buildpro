@@ -5,3 +5,5 @@
 #
 # http://haxe.org
 #
+class compiler_haxe(compiler_base):
+  pass
