@@ -4,3 +4,5 @@
 #
 # http://coffeescript.org/
 #
+class coffeescript(compiler_base):
+  pass
