@@ -35,5 +35,5 @@
 # The Software is copyrighted and comes with a single user license, and may not be redistributed. If you wish to
 # obtain a redistribution license, please
 #
-class dmcpp(compiler_base):
+class compiler_dmcpp(compiler_base):
   pass
