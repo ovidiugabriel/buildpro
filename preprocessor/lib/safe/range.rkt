@@ -1,18 +1,26 @@
 #lang racket
 
-;; global storage
+;; storage
 (define *vars* (make-hash))
 
 ;; types
-(define (range a b) (list 'range a b))
+(define (range α β) (list 'range α β))
 
 ;; functions to be used as "language statements"
 (define (declare varname type) (hash-set! *vars* varname type))
 (define (typeof varname) (hash-ref *vars* varname))
 
-;; examples
-(declare 'a  (range 0 2))
-(typeof 'a) ;;  '(range 0 2)
+(define (rangeof μ)
+  (match (first μ)
+    ['+ (Σ-range (typeof (first (cdr μ))) (typeof (second (cdr μ)))) ] ))
 
+(define (Σ-range α β)
+  (range (+ (first (cdr α)) (first (cdr β)))
+         (+ (second (cdr α)) (second (cdr β))) ))
+
+;; ***** Examples *****
+
+(declare 'a  (range 0 2))
 (declare 'b (range 0 2))
-(typeof 'b) ;;  '(range 0 2)
+
+(rangeof '(+ a b)) ;; prints: '(range 0 4)
