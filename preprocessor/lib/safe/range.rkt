@@ -18,12 +18,12 @@
   (range (+ (first (cdr α)) (first (cdr β)))
          (+ (second (cdr α)) (second (cdr β))) ))
 
-(define (check-lt-range expr)
-  (let ([type (typeof (first (cdr expr)))])
+(define (check-lt-range μ)
+  (let ([type (typeof (first (cdr μ)))])
   (let ([limit (match (first type)
                  ['range (second (cdr type)) ] )])
-    (when (< limit (second (cdr expr)))
-      (raise-user-error (string-append (~a (second (cdr expr))) " is out of " (~a type) )) ) ) ) )
+    (when (< limit (second (cdr μ)))
+      (raise-user-error (string-append (~a (second (cdr μ))) " is out of " (~a type) )) ) ) ) )
 
 
 ;; ***** Examples *****
