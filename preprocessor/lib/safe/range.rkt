@@ -41,6 +41,10 @@
 (define (array-size var) (second (cdr (typeof var))))
 (define (array-type var) (first (cdr (typeof var))))
 
+;; Syntactic sugars
+(define-syntax-rule (check-vector-index index vector)
+  (check-lt-range `(< index ,(array-size 'vector))) )
+
 ;; ***** Examples *****
 
 (declare 'a (range 0 2))
@@ -51,6 +55,4 @@
 (declare 'i uint8_t)
 (declare 'v (array 'int 256))
 
-(check-lt-range `(< i ,(array-size 'v))) ;; throws: (< i 256) is a tautology because 256 is out of (range 0 255)
-
-
+(check-vector-index i v) ;; throws: (< i 256) is a tautology because 256 is out of (range 0 255)
