@@ -18,9 +18,20 @@
   (range (+ (first (cdr α)) (first (cdr β)))
          (+ (second (cdr α)) (second (cdr β))) ))
 
+(define (check-lt-range expr)
+  (let ([type (typeof (first (cdr expr)))])
+  (let ([limit (match (first type)
+                 ['range (second (cdr type)) ] )])
+    (when (< limit (second (cdr expr)))
+      (raise-user-error (string-append (~a (second (cdr expr))) " is out of " (~a type) )) ) ) ) )
+
+
 ;; ***** Examples *****
 
 (declare 'a  (range 0 2))
 (declare 'b (range 0 2))
 
 (rangeof '(+ a b)) ;; prints: '(range 0 4)
+
+(declare 'i (range 0 255))
+(check-lt-range '(< i 256)) ;; throws '256 is out of (range 0 255)'
