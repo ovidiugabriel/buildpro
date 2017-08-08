@@ -1,12 +1,33 @@
 #lang racket
 
+(provide range-min
+         range-max)
+
+;; stdint
+;; {{{
+(provide stdint:typename)
+(provide  ;; unsigned types
+ uint8_t
+ uint16_t
+ uint32_t
+ uint64_t
+ 
+ ;; signed types
+ int8_t
+ int16_t
+ int32_t
+ int64_t)
+;; }}}
+
 ;; storage
 (define *vars* (make-hash))
 
 ;; types
 (define-syntax-rule (range alpha beta) (list 'range alpha beta))
-
 (define bit      (range 0 1))
+
+;; To superseed 'lwfront/core/stdc/stdint.rkt'
+;; {{{
 (define uint8_t  (range 0 255))
 (define uint16_t (range 0 65535))
 (define uint32_t (range 0 4294967295))
@@ -16,20 +37,30 @@
 (define int16_t (range -32768 32767))
 (define int32_t (range -2147483648 2147483647))
 (define int64_t (range -9223372036854775808 9223372036854775807))
+;; }}}
 
 ;; Helpers for range type
+
+;; Test if given type is a range
+(define (range? type)
+  (match type
+    [(list 'range _ _) #t]
+    [_ #f] ))
+
 (define (range-min type) (first (cdr type)))
 (define (range-max type) (second (cdr type)))
 
 ;; Gets the type name as a string for a given range as input
-(define (stdint-typename type)
+(define (stdint:typename type)
+  (->i ([type list?])
+       [result range?] )
   (cond
-    [(equal? type uint8_t) "uint8_t"]
+    [(equal? type uint8_t)  "uint8_t" ]
     [(equal? type uint16_t) "uint16_t"]
     [(equal? type uint32_t) "uint32_t"]
     [(equal? type uint64_t) "uint64_t"]
     
-    [(equal? type int8_t) "int8_t"]
+    [(equal? type int8_t)  "int8_t" ]
     [(equal? type int16_t) "int16_t"]
     [(equal? type int32_t) "int32_t"]
     [(equal? type int64_t) "int64_t"]
@@ -88,21 +119,10 @@
     (with-handlers ([string? (lambda (s) (raise (string-append "infinite loop: " s)) )])
       (check-lt-range `(< i ,(array-size var))) )
     ; generate (C code)
-    (string-append "for (" (stdint-typename index-type) " i = 0; i < " (~a (array-size var)) "; i++) {\n"
+    (string-append "for (" (stdint:typename index-type) " i = 0; i < " (~a (array-size var)) "; i++) {\n"
                    (string-append "    " (block (string-append (~a var) "[i]")) ";\n")
                    "}\n" ) ))
 
 ;; Syntactic sugars
 (define-syntax-rule (check-vector-index index vector)
   (check-lt-range `(< index ,(array-size 'vector))) )
-
-;; ***** Examples *****
-
-;; (declare 'a (range 0 2))
-;; (declare 'b (range 0 2))
-
-;; (rangeof '(+ a b)) ;; prints: '(range 0 4)
-
-(declare 'v (array 'int 256))
-(display (c-array-each 'v (lambda (s) (string-append "printf(\"%s\", " s ")"))  ))
-
