@@ -51,9 +51,9 @@
 (define (range-max type) (second (cdr type)))
 
 ;; Gets the type name as a string for a given range as input
-(define (stdint:typename type)
-  (->i ([type list?])
-       [result range?] )
+(define/contract (stdint:typename type)
+  (->i ([type range?])
+       [result string?] )
   (cond
     [(equal? type uint8_t)  "uint8_t" ]
     [(equal? type uint16_t) "uint16_t"]
