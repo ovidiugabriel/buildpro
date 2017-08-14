@@ -3,6 +3,17 @@
 (provide range-min
          range-max)
 
+(provide isset?
+         target:isset?)
+
+(provide declare-var
+         declare
+         target:declare)
+
+(provide array)
+(provide c-array-each)
+(provide array-var)
+
 ;; stdint
 ;; {{{
 (provide stdint:typename)
@@ -21,6 +32,12 @@
 
 ;; storage
 (define *vars* (make-hash))
+
+;; symbols that are defined to the target (output) language
+(define *target-sym* (make-hash))
+
+(define (isset? key) (hash-has-key? *vars* key))
+(define (target:isset? key) (hash-has-key? *target-sym* key))
 
 ;; types
 (define-syntax-rule (range alpha beta) (list 'range alpha beta))
@@ -81,9 +98,13 @@
 
 ;; functions to be used as "language statements"
 
+(define-syntax-rule (declare-var var type)
+  (declare 'var type) )
+
 ;; Declares a type in the verifier and does not produce any output
 ;; A specific language generator shall call this, at the time of generated declaration.
 (define (declare varname type) (hash-set! *vars* varname type))
+(define (target:declare varname type) (hash-set! *target-sym* varname type))
 
 (define (typeof varname) (hash-ref *vars* varname))
 
@@ -103,6 +124,9 @@
       (raise (string-append (~a expr) " is a tautology because "
                                        (~a (second (cdr expr))) " is out of " (~a type) )) ) ) ) )
 
+(define-syntax-rule (array-var type size)
+  (array 'type size) )
+
 ;; Array specific functions
 (define (array type n) (list 'array type n))
 (define (array-size var) (second (cdr (typeof var))))
@@ -113,8 +137,11 @@
 ;;    block is a function with var[i] as string parameter
 ;;
 (define (c-array-each var block)
+  ;; the generated code is required to generate a declaration for the vector variable
+  (when (not (target:isset? var))
+    (raise (string-append (~a var) " is not declared in the generated code")))
   (let ([index-type (type-index-for (array-size 'v))])
-    (declare 'i index-type)
+    (declare-var i index-type)
     ; prevent generating an infinite loop
     (with-handlers ([string? (lambda (s) (raise (string-append "infinite loop: " s)) )])
       (check-lt-range `(< i ,(array-size var))) )
