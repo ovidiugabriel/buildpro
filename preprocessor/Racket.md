@@ -8,6 +8,9 @@ First simple console script in Racket ...
 
 ```
 
+* **void** is a function that when called, returns `#<void>`
+* **null** is the empty list
+
 ```
 > void
 #<procedure:void>
@@ -17,6 +20,9 @@ First simple console script in Racket ...
 
 > (list (void))
 '(#<void>)
+
+> (cdr '(void))
+'()
 
 > (cdr (list (void)))
 '()
