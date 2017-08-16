@@ -35,7 +35,9 @@ First simple console script in Racket ...
 @display|{
   @(number->string (+ 1 2))
 }|
+```
 
+```racket
 @; evaluation enabled
 @display{
   @(number->string (+ 1 2))
