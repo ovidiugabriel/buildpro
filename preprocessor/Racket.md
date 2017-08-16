@@ -9,10 +9,18 @@ First simple console script in Racket ...
 ```
 
 ```
+> void
+#<procedure:void>
+
+> (display (void))
+#<void>
+
 > (list (void))
 '(#<void>)
+
 > (cdr (list (void)))
 '()
+
 > null
 '()
 
