@@ -23,7 +23,8 @@ First simple console script in Racket ...
 ```racket
 #lang scribble/text
 
-@display{
+@display{@; space not allowed between '@display' and '{'
+@; and not allowed between '{' and '@;'
     hello world
 } @; string argument
 
