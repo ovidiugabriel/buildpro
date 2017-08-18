@@ -10,8 +10,10 @@
          declare
          target:declare)
 
-(provide array)
-(provide c-array-each)
+;; (provide array)
+(provide array:each
+         array:new)
+(provide c-printf)
 (provide array-var)
 
 ;; stdint
@@ -137,7 +139,7 @@
 ;;    block is a function with var[i] as string parameter
 ;;
 (define (c-array-each var block)
-  ;; the generated code is required to generate a declaration for the vector variable
+  ; the generated code is required to generate a declaration for the vector variable
   (when (not (target:isset? var))
     (raise (string-append (~a var) " is not declared in the generated code")))
   (let ([index-type (type-index-for (array-size 'v))])
@@ -150,6 +152,25 @@
                    (string-append "    " (block (string-append (~a var) "[i]")) ";\n")
                    "}\n" ) ))
 
+(define-syntax-rule (array:each var x block)
+  (c-array-each 'var (λ (x) (quasiquote ,block)) ))
+
+(define (c-declare-array type name size)
+  (target:declare name (array type size))
+  (declare name (array type size))
+  (string-append (~a type) " " (~a name) "[" (~a size) "] = {0};\n"))
+
 ;; Syntactic sugars
 (define-syntax-rule (check-vector-index index vector)
   (check-lt-range `(< index ,(array-size 'vector))) )
+
+;;
+;; Usage example:
+;;
+;;     @array:new[ int v 256 ]
+;;
+(define-syntax-rule (array:new type name size)
+  (c-declare-array 'type 'name size))
+
+(define (c-printf format . rest)
+  (string-append "printf(\"" format "\", " (string-join (map ~a rest) ", ") ")") )
