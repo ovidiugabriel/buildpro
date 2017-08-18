@@ -68,6 +68,7 @@ First simple console script in Racket ...
 Multiple parameters 
 
 ```racket
-;; example
+;; example calling array:new with 3 parameters
+;; equivalent with:  (array:new int v 256)
 @array:new[ int v 256 ]
 ```
