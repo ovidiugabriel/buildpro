@@ -64,3 +64,10 @@ First simple console script in Racket ...
 @(define (§ text) text)
 @§{$hello}
 ```
+
+Multiple parameters 
+
+```racket
+;; example
+@array:new[ int v 256 ]
+```
