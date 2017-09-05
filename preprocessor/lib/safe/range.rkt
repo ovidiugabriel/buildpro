@@ -152,6 +152,13 @@
                    (string-append "    " (block (string-append (~a var) "[i]")) ";\n")
                    "}\n" ) ))
 
+;;
+;; Usage example:
+;;
+;;     @array:each[ v x
+;;         (c-printf "%d" x)
+;;     ]
+;;
 (define-syntax-rule (array:each var x block)
   (c-array-each 'var (λ (x) (quasiquote ,block)) ))
 
