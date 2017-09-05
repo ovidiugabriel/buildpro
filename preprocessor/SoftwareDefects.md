@@ -29,10 +29,7 @@ The density of bugs in a section of code:
 So we can conclude that **bugs density is a function of the degree of abstraction**.
 *The greater the abstraction is, the lower bug density*. 
 
-Given that reused code, abstract constructs provider, has no bugs. We discuss about the code written in a given section, not about libraries.
-Of course, you can say, then it means that we moved the bugs from our section to the libraries. Well, not exactly, because 
-the bugs in the library can be fixed, and we can reuse the library with the bug fixed, and if the library is used in many sections 
-then we fixed all the occurrences of that bug, so we multiplied the bug density reduction.
+Given that reused code, abstract constructs provider, has no bugs. We discuss about the code written in a given section, not about defects introduced by libraries usage. Of course, you can say, then it means that we moved the bugs from our section to the libraries. Well, not exactly, because the bugs in the library can be fixed, and we can reuse the library with the bug fixed, and if the library is used in many sections then we fixed all the occurrences of that bug, so we leveraged the bug density reduction.
 
 Of course it is not only about libraries here. I am advertising **Language Oriented Programming** indeed.
 
