@@ -74,9 +74,11 @@ void f(vector<string>& v) {
 
 ##### Official and Globally Recognized Guildelines
 
-* [Joint Strike Fighter Air Vehicle C++ Coding Standards](http://www.stroustrup.com/JSF-AV-rules.pdf)
+* [Joint Strike Fighter Air Vehicle C++ Coding Standards - Lockheed Martin Corp.](http://www.stroustrup.com/JSF-AV-rules.pdf)
 * Motor Industry Software Reliability Association (MISRA) Guidelines For The Use Of The C Language In Vehicle Based Software
 * Vehicle Systems Safety Critical Coding Standards for C
 * Scott Meyers - Effective C++ and More Effective C++
 * [C++ Core Guidelines - Bjarne Stroustrup and Herb Sutter](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
 * [Industrial Strength C++ - Mats Henricson and Erik Nyquist](https://www.tiobe.com/files/industrial-strength.pdf)
+* C++ Coding Standards: 101 Rules, Guidelines, and Best Practices - Herb Sutter, Andrei Alexandrescu
+* Herb Sutter - Exceptional C++ and More Exceptional C++ 
