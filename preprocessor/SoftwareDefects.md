@@ -26,8 +26,8 @@ The density of bugs in a section of code:
 * doesn't depends on who wrote that code (the experience and skill)
 * doesn't depends on the used platform/language (as long as the degree of abstraction is the same)
 
-So we can conclude that bugs density is a function of the degree of abstraction.
-The greater the abstraction is, the lower bug density. 
+So we can conclude that **bugs density is a function of the degree of abstraction**.
+*The greater the abstraction is, the lower bug density*. 
 
 Given that reused code, abstract constructs provider, has no bugs. We discuss about the code written in a given section, not about libraries.
 Of course, you can say, then it means that we moved the bugs from our section to the libraries. Well, not exactly, because 
