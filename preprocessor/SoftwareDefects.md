@@ -71,3 +71,11 @@ void f(vector<string>& v) {
 ```
 
 #### Inherently Unsafe Languages
+
+##### Official and Globally Recognized Guildelines
+
+* [Joint Strike Fighter Air Vehicle C++ Coding Standards](http://www.stroustrup.com/JSF-AV-rules.pdf)
+* Motor Industry Software Reliability Association (MISRA) Guidelines For The Use Of The C Language In Vehicle Based Software
+* Vehicle Systems Safety Critical Coding Standards for C
+* Scott Meyers - Effective C++ and More Effective C++
+* [C++ Core Guidelines - Bjarne Stroustrup and Herb Sutter](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
