@@ -79,3 +79,4 @@ void f(vector<string>& v) {
 * Vehicle Systems Safety Critical Coding Standards for C
 * Scott Meyers - Effective C++ and More Effective C++
 * [C++ Core Guidelines - Bjarne Stroustrup and Herb Sutter](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
+* [Industrial Strength C++ - Mats Henricson and Erik Nyquist](https://www.tiobe.com/files/industrial-strength.pdf)
