@@ -28,11 +28,6 @@ for (i = 0; i < sizeof(bytes); i++) {
      ]
 ```
 
-**@array:each Ensures**
-
-* the vector declaration is already generated in the target code
-* an infinite loop is not generated due to a tautologic expression
-
 **Generated code**: The meta-language correctly generated the `int16_t` type declaration for the counter.
 
 ```cpp
@@ -55,3 +50,8 @@ for (int16_t i = 0; i < 256; i++) {
 
 ```
 * the `body` must be a valid racket expression where scoping can be used, including `value`.
+
+**@array:each Ensures**
+
+* the vector declaration is already generated in the target code
+* an infinite loop is not generated due to a tautologic expression
