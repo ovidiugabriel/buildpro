@@ -65,12 +65,16 @@
 ;; If the type is not an unsigned integer, 0 is returned
 ;;
 (define (sizeof-type type)
-  (match type
-    [(list range 0 255) 1]
-    [(list range 0 65535) 2]
-    [(list range 0 4294967295) 4]
-    [(list range 0 18446744073709551615) 8]
-    [_ 0] ))
+  (match (stdint:typename type)
+    ["uint8_t"  1]
+    ["int8_t"   1]
+    ["uint16_t" 2]
+    ["int16_t"  2]
+    ["uint32_t" 4]
+    ["int32_t"  4]
+    ["uint64_t" 8]
+    ["int64_t"  8]
+    [_ (raise (string-append "Unknown type: " (~a type) ". Not a byte multiple type?"))] ))
 
 ;; Helpers for range type
 
@@ -185,7 +189,7 @@
 ;;     ]
 ;;
 (define-syntax-rule (array:each var x block)
-  (c-array-each 'var (λ (x) (quasiquote ,block)) ))
+  (c-array-each 'var (lambda (x) (quasiquote ,block)) ))
 
 (define (c-declare-array type name size)
   (target:declare name (array type size))
