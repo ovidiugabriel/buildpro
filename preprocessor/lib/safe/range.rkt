@@ -61,6 +61,17 @@
 (define int64_t (range -9223372036854775808 9223372036854775807))
 ;; }}}
 
+;;
+;; If the type is not an unsigned integer, 0 is returned
+;;
+(define (sizeof-type type)
+  (match type
+    [(list range 0 255) 1]
+    [(list range 0 65535) 2]
+    [(list range 0 4294967295) 4]
+    [(list range 0 18446744073709551615) 8]
+    [_ 0] ))
+
 ;; Helpers for range type
 
 ;; Test if given type is a range
@@ -104,6 +115,13 @@
     [(<= n-elem (range-max int16_t)) int16_t]
     [(<= n-elem (range-max int32_t)) int32_t]
     [(<= n-elem (range-max int64_t)) int64_t] ))
+
+(define (type->bits type)
+  (let ([n-bits
+         (match type
+           [(list range 0 1) 1]
+           [_ (* 8 (sizeof-type type))] ) ])
+    (for/list ([_ (in-range 0 n-bits)]) bit) ) )
 
 ;; functions to be used as "language statements"
 
