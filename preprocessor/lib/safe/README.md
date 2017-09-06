@@ -28,6 +28,11 @@ for (i = 0; i < sizeof(bytes); i++) {
      ]
 ```
 
+**@array:each Ensures**
+
+* the vector declaration is already generated in the target code
+* an infinite loop is not generated due to a tautologic expression
+
 **Generated code**: The meta-language correctly generated the `int16_t` type declaration for the counter.
 
 ```cpp
