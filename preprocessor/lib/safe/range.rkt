@@ -10,6 +10,7 @@
          declare
          target:declare)
 
+(provide type-index-for)
 ;; (provide array)
 (provide array:each
          array:new)
@@ -42,6 +43,8 @@
 (define (target:isset? key) (hash-has-key? *target-sym* key))
 
 ;; types
+
+;; defines a range type with step=1
 (define-syntax-rule (range alpha beta) (list 'range alpha beta))
 (define bit      (range 0 1))
 
@@ -89,14 +92,18 @@
 
 ;;
 ;; Gets the correct index type for a given numer of elements
-;; in a vector
+;; in a vector. This index shall be compared with the number of elements
+;;
+;; For example if we have 128 elements in a vector, the index cannot be
+;; int8_t because int8_t is (range -128 127), and index will never be 128
+;; to break the loop; so index needs to be int16_t
 ;;
 (define (type-index-for n-elem)
   (cond
-    [(< n-elem (range-max int8_t)) int8_t]
-    [(< n-elem (range-max int16_t)) int16_t]
-    [(< n-elem (range-max int32_t)) int32_t]
-    [(< n-elem (range-max int64_t)) int64_t] ))
+    [(<= n-elem (range-max int8_t)) int8_t]
+    [(<= n-elem (range-max int16_t)) int16_t]
+    [(<= n-elem (range-max int32_t)) int32_t]
+    [(<= n-elem (range-max int64_t)) int64_t] ))
 
 ;; functions to be used as "language statements"
 
