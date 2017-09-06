@@ -42,3 +42,16 @@ for (int16_t i = 0; i < 256; i++) {
     printf("%X ", bytes[i]);
 }
 ```
+
+**Synopsis**
+```racket
+@array:new[ type name size ]
+```
+
+```racket
+@array:each[ vector value
+         body
+     ]
+
+```
+* the `body` must be a valid racket expression where scoping can be used, including `value`.
