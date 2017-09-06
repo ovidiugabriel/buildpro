@@ -83,6 +83,6 @@ void f(vector<string>& v) {
 * C++ Coding Standards: 101 Rules, Guidelines, and Best Practices - Herb Sutter, Andrei Alexandrescu
 * Herb Sutter - Exceptional C++ and More Exceptional C++ 
 
-##### Collection of confusing code snippets (unofficial)
+##### Collections of confusing code snippets (unofficial)
 
 * [Atoms of Confusion](https://atomsofconfusion.com/data.html#literal-encoding)
