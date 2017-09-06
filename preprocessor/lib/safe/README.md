@@ -4,7 +4,7 @@
 
 **Problem 1 - Infinite loops**
 
-Since i (as 8-bits unsigned integer) takes values between 0 and 255, the condition is always true, so the loop will never break.
+Since the loop counter, as 8-bits unsigned integer, takes values between 0 and 255, the condition is always true, so the loop will never break.
 
 ```cpp
 uint8_t i = 0;
