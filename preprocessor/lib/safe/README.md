@@ -55,3 +55,30 @@ for (int16_t i = 0; i < 256; i++) {
 
 * the vector declaration is already generated in the target code
 * an infinite loop is not generated due to a tautologic expression
+
+
+### Miscellaneous Functions
+
+#### declare (macro)
+
+Declares a variable of specified type
+
+```racket
+(declare varname type)
+```
+
+#### declared? (macro)
+
+Checks if a variable is declared
+
+```racket
+(declared? varname)
+```
+
+#### typeof (macro)
+
+Returns the type of a previously declared variable. `#f` if the variable is not declared.
+
+```racket
+(typeof varname)
+```
