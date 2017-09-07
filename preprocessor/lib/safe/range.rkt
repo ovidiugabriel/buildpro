@@ -3,12 +3,13 @@
 (provide range-min
          range-max)
 
-(provide isset?
-         target:isset?)
-
-(provide declare-var
+(provide declared?
          declare
-         target:declare)
+         typeof)
+         
+
+(provide target:declare
+         target:isset?)
 
 (provide type-index-for)
 ;; (provide array)
@@ -39,26 +40,31 @@
 ;; symbols that are defined to the target (output) language
 (define *target-sym* (make-hash))
 
-(define (isset? key) (hash-has-key? *vars* key))
+(define-syntax-rule (declared? varname) (_declared? 'varname))
+(define (_declared? varname)
+  (hash-has-key? *vars* varname))
+
 (define (target:isset? key) (hash-has-key? *target-sym* key))
 
 ;; types
 
-;; defines a range type with step=1
-(define-syntax-rule (range alpha beta) (list 'range alpha beta))
-(define bit      (range 0 1))
+;; defines a range-type with step=1
+(define-syntax-rule (range-type min max step)
+  (list 'range-type min max step))
+
+(define bit      (range-type 0 1 1))
 
 ;; To superseed 'lwfront/core/stdc/stdint.rkt'
 ;; {{{
-(define uint8_t  (range 0 255))
-(define uint16_t (range 0 65535))
-(define uint32_t (range 0 4294967295))
-(define uint64_t (range 0 18446744073709551615))
+(define uint8_t  (range-type 0 255 1))
+(define uint16_t (range-type 0 65535 1))
+(define uint32_t (range-type 0 4294967295 1))
+(define uint64_t (range-type 0 18446744073709551615 1))
 
-(define int8_t  (range -128 127))
-(define int16_t (range -32768 32767))
-(define int32_t (range -2147483648 2147483647))
-(define int64_t (range -9223372036854775808 9223372036854775807))
+(define int8_t  (range-type -128 127 1))
+(define int16_t (range-type -32768 32767 1))
+(define int32_t (range-type -2147483648 2147483647 1))
+(define int64_t (range-type -9223372036854775808 9223372036854775807 1))
 ;; }}}
 
 ;;
@@ -76,20 +82,21 @@
     ["int64_t"  8]
     [_ (raise (string-append "Unknown type: " (~a type) ". Not a byte multiple type?"))] ))
 
-;; Helpers for range type
+;; Helpers for range-type
 
 ;; Test if given type is a range
-(define (range? type)
+(define (range-type? type)
   (match type
-    [(list 'range _ _) #t]
+    [(list 'range-type _ _ _) #t]
     [_ #f] ))
 
 (define (range-min type) (first (cdr type)))
 (define (range-max type) (second (cdr type)))
+(define (range-step type) (third (cdr type)))
 
 ;; Gets the type name as a string for a given range as input
 (define/contract (stdint:typename type)
-  (->i ([type range?])
+  (->i ([type range-type?])
        [result string?] )
   (cond
     [(equal? type uint8_t)  "uint8_t" ]
@@ -123,34 +130,59 @@
 (define (type->bits type)
   (let ([n-bits
          (match type
-           [(list range 0 1) 1]
+           [(list range-type 0 1 1) 1]
            [_ (* 8 (sizeof-type type))] ) ])
     (for/list ([_ (in-range 0 n-bits)]) bit) ) )
 
 ;; functions to be used as "language statements"
 
-(define-syntax-rule (declare-var var type)
-  (declare 'var type) )
+;;
+;; === declare ===
+;;
+
+(define-syntax-rule (declare varname type)
+  (_declare 'varname type))
 
 ;; Declares a type in the verifier and does not produce any output
 ;; A specific language generator shall call this, at the time of generated declaration.
-(define (declare varname type) (hash-set! *vars* varname type))
-(define (target:declare varname type) (hash-set! *target-sym* varname type))
+(define/contract (_declare varname type)
+  (->i ([varname symbol?]
+        [type list?])
+       [result void?] )  
+  (hash-set! *vars* varname type))
 
-(define (typeof varname) (hash-ref *vars* varname))
+;; ---
+
+(define (target:declare varname type)
+  (hash-set! *target-sym* varname type))
+
+;;
+;; === typeof ===
+;;
+(define-syntax-rule (typeof varname)
+  (_typeof 'varname))
+
+(define/contract (_typeof varname)
+  (->i ([varname symbol?])        
+       [result (or/c false? list?)] )
+  (when (_declared? varname)
+    (hash-ref *vars* varname)))
+
+;; ---
 
 (define (rangeof expr)
   (match (first expr)
-    ['+ (sum-range (typeof (first (cdr expr))) (typeof (second (cdr expr)))) ] ))
+    ['+ (sum-range (_typeof (first (cdr expr))) (_typeof (second (cdr expr)))) ] ))
 
 (define (sum-range alpha beta)
-  (range (+ (first (cdr alpha)) (first (cdr beta)))
-         (+ (second (cdr alpha)) (second (cdr beta))) ))
+  (range-type (+ (first (cdr alpha)) (first (cdr beta)))
+         (+ (second (cdr alpha)) (second (cdr beta)))
+         1))
 
 (define (check-lt-range expr)
-  (let ([type (typeof (first (cdr expr)))])
+  (let ([type (_typeof (first (cdr expr)))])
   (let ([limit (match (first type)
-                 ['range (second (cdr type)) ] )])
+                 ['range-type (second (cdr type)) ] )])
     (when (< limit (second (cdr expr)))
       (raise (string-append (~a expr) " is a tautology because "
                                        (~a (second (cdr expr))) " is out of " (~a type) )) ) ) ) )
@@ -160,8 +192,8 @@
 
 ;; Array specific functions
 (define (array type n) (list 'array type n))
-(define (array-size var) (second (cdr (typeof var))))
-(define (array-type var) (first (cdr (typeof var))))
+(define (array-size var) (second (cdr (_typeof var))))
+(define (array-type var) (first (cdr (_typeof var))))
 
 ;;
 ;; Generates a for-each to traverse a vector
@@ -172,7 +204,7 @@
   (when (not (target:isset? var))
     (raise (string-append (~a var) " is not declared in the generated code")))
   (let ([index-type (type-index-for (array-size 'v))])
-    (declare-var i index-type)
+    (declare i index-type)
     ; prevent generating an infinite loop
     (with-handlers ([string? (lambda (s) (raise (string-append "infinite loop: " s)) )])
       (check-lt-range `(< i ,(array-size var))) )
@@ -193,7 +225,7 @@
 
 (define (c-declare-array type name size)
   (target:declare name (array type size))
-  (declare name (array type size))
+  (_declare name (array type size))
   (string-append (~a type) " " (~a name) "[" (~a size) "] = {0};\n"))
 
 ;; Syntactic sugars
@@ -210,3 +242,7 @@
 
 (define (c-printf format . rest)
   (string-append "printf(\"" format "\", " (string-join (map ~a rest) ", ") ")") )
+
+(range-min (range-type 0 2 1))
+(range-max (range-type 0 2 1))
+(range-step (range-type 0 2 1))
