@@ -242,7 +242,3 @@
 
 (define (c-printf format . rest)
   (string-append "printf(\"" format "\", " (string-join (map ~a rest) ", ") ")") )
-
-(range-min (range-type 0 2 1))
-(range-max (range-type 0 2 1))
-(range-step (range-type 0 2 1))
