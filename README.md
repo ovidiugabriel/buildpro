@@ -48,6 +48,7 @@ The arguments may interpolate variables:
 * `$dirname` - The directory of the current file
 * `$basename` - The name only portion of the current file (including extension)
 
+**Note**: Adding such files (with inlined `@buildpro` directive) to a .project.yml file will require to specify in the project that you wish to ignore inlined `@buildpro` directive.
 
 ###### Code Generation (-proto)
 
