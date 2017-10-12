@@ -9,7 +9,7 @@ It is a tool for build professionals (with a role of build manager in some compa
 
 ##### Usages
 
-buildpro was designed with **incremental builds** in mind, so each build run is a **no-clean build**
+**buildpro** was designed with **incremental builds** in mind, so each build run is a **no-clean build**
 
 ```bash
 #
@@ -27,10 +27,29 @@ But you can force clean also
 #
 clean=1 python buildpro.py projectname
 ```
+###### Inline compiler invocation (-inline)
 
-###### Code Generation
+```bash
+python buildpro.py -inline <file-path>
+```
 
-buildpro is able to generate **Haxe extern classes** to wrap over php code of the Barebone MVC framework.
+This will search in the file specified by *file-path*
+for the following line
+
+```cpp
+// @buildpro <compiler> <arguments>
+```
+
+The arguments may interpolate variables:
+
+* `$filepath` - The full path to the current file
+* `$dirname` - The directory of the current file
+* `$basename` - The name only portion of the current file (including extension)
+
+
+###### Code Generation (-proto)
+
+**buildpro** is able to generate **Haxe extern classes** to wrap over php code of the Barebone MVC framework.
 
 There is no big deal about this. You just have to specify the prototype using a **@proto** doc block comment tag.
 For example doing so:
