@@ -29,6 +29,8 @@ clean=1 python buildpro.py projectname
 ```
 ###### Inline compiler invocation (-inline)
 
+If you don't want to create a new project, you can use buildpro to compile a single source file, without having to write a separate bash script or a makefile to compile it. Just embed the compile command in the source file.
+
 ```bash
 python buildpro.py -inline <file-path>
 ```
