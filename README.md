@@ -88,7 +88,7 @@ The file `<project_name>.project.yml` is an [YAML](http://www.yaml.org/spec/1.2/
 * `library_paths` : list of strings
 * `libraries`: list of strings (in `qmake` both `library_paths` and `libraries` were included in `LIBS`)
 * `artifact` : dictionary (key:string, value:string) - `artefact` is also supported since it is more common everywhere outside North America.
-* `compiler` :
+* `compiler` : name of the compiler backend to be used; for example `gcc` will use an instance of `compiler.compiler_gcc`, by loading `compiler/gcc.py`
 * `command` :
 * `deploy` :
 
