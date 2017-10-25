@@ -143,6 +143,8 @@ deploy:
     passwd: "... ftp password here ..."  # beware of storing passwords
 ```
 
+**Note**: buildpro emits a warning if `passwd` is specified or used in the FTP script file. This is normal, it is just to remember you where you exposed your password.
+
 ###### Online Resources:
 
 * [YAML 1.2 Specification](http://www.yaml.org/spec/1.2/spec.html)
