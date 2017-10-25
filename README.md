@@ -127,16 +127,20 @@ artifact:
 
 ###### Automatic FTP deployment
 
+
+If `script` is specified, all other attributes become optional.
+
 ```yaml
 deploy:
   ftp:
+    script: ftp-script-path
     mode: ascii|binary
     verbose: 'On'
     quote: pasv
     host: localhost
     port: 21
     user: "... ftp username here ..."
-    passwd: "... ftp password here ..."
+    passwd: "... ftp password here ..."  # beware of storing passwords
 ```
 
 ###### Online Resources:
