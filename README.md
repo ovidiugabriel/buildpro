@@ -128,9 +128,10 @@ artifact:
 ###### Automatic FTP deployment
 
 ```yaml
-ftp:
-  user: "... ftp username here ..."
-  passwd: "... ftp password here ..."
+deploy:
+  ftp:
+    user: "... ftp username here ..."
+    passwd: "... ftp password here ..."
 ```
 
 ###### Online Resources:
