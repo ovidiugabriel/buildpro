@@ -130,6 +130,11 @@ artifact:
 ```yaml
 deploy:
   ftp:
+    mode: ascii|binary
+    verbose: 'On'
+    quote: pasv
+    host: localhost
+    port: 21
     user: "... ftp username here ..."
     passwd: "... ftp password here ..."
 ```
