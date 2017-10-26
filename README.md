@@ -141,6 +141,10 @@ deploy:
     port: 21
     user: "... ftp username here ..."
     passwd: "... ftp password here ..."  # beware of storing passwords
+    files:
+      - first file
+      - second file
+      - thrid file
 ```
 
 **Note**: buildpro emits a warning if `passwd` is specified or used in the FTP script file. This is normal, it is just to remember you where you exposed your password.
