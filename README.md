@@ -154,6 +154,7 @@ deploy:
 * [YAML 1.2 Specification](http://www.yaml.org/spec/1.2/spec.html)
 * [Online YAML Parser](http://yaml-online-parser.appspot.com/)
 * [Python YAML Parser - pyYAML](http://pyyaml.org/wiki/PyYAMLDocumentation)
+* [Convert JSON to YAML online](https://www.json2yaml.com/) - Usefull if you know JSON very well but it is hard for you to manually code YAML files.
 
 ###### YAML Library Dependencies
 
