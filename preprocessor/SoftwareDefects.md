@@ -1,5 +1,7 @@
 #### On Software Defects
 
+A library that attempts to prevent some bugs: [Safe Library: lib/safe](lib/safe) 
+
 Many people think that *the number of bugs in a section of code is proportional to the skill of the person who coded it*.
 Most of them are developers *too proud and over-confident* to their own coding skills. 
 
