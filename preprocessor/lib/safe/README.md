@@ -43,13 +43,25 @@ for (int16_t i = 0; i < 256; i++) {
 @array:new[ type name size ]
 ```
 
+* `type` - token representing the type of each element
+* `name` - token representing the name of the array
+* `size` - token representing the number of elements in the array (this is an integer)
+
+Generates a fixed-size initialized array declaration.
+
+```cpp
+type name[size] = {0};
+```
+
 ```racket
 @array:each[ vector value
          body
      ]
 
 ```
-* the `body` must be a valid racket expression where scoping can be used, including `value`.
+* `body` - must be a valid racket expression where scoping can be used, `value` is available to be used in `body`.
+* `vector` - the name of the vector we want to iterate over
+* `value` - the value available for current iteration
 
 **@array:each Ensures**
 
