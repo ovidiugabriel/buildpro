@@ -3,14 +3,16 @@
 (struct symbol (varname type) #:inspector #f)
 (struct range (min max step) #:inspector #f)
 (struct type (byte-count range) #:inspector #f)
+(struct array (type size) #:inspector #f)
 
 ;;
 ;; gives the number of bytes used to store `expr`
 ;;
-(define/contract (byte-count expr)
-  (->i ([expr symbol?])
-       [result integer?])  
-  (type-byte-count (symbol-type expr)) )
+(define (byte-count expr)
+  (match expr
+    [(symbol _ type) (type-byte-count type)]
+    [(type count _) count]
+    [(array type size) (* size (type-byte-count type))] ) )
 
 (define uint8_t  (type 1 (range 0 255 1)))
 (define uint16_t (type 2 (range 0 65535 1)))
