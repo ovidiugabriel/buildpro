@@ -25,7 +25,9 @@ Basicaly **PHP**+**Smarty** combination becomes your new preprocessor. You can u
 
 ###### Not supported
  
-**IMPORTANT:** `#undef` and `#pragma` are not supported
+**IMPORTANT:** `#undef` and `#pragma` are not supported. 
+* `#undef`: A symbol is actually a constant, so a constant once defined shall not be ever changed (including its undef). Using `#undef` with this preprocessor will throw a fatal error.
+* `#pragma` is not supported because it is going against code portability. All `#pragma`s are compiler specific, for this reason `#pragma` directive shall be transparent for this preprocessor (handled by the target compiler instead).
 
 ##### Other Pragmatic Features
  * add expression based syntax for C/C++
