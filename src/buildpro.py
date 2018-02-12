@@ -114,7 +114,10 @@ def get_inline_command(filename):
                         raise Exception('Duplicate @buildpro in ' + filename + ":" + str(line_$
 
                     cmd = m.group(1).strip()
-                    cmd = cmd.replace('$filepath', os.path.realpath(filename))
+                    filepath = os.path.realpath(filename)
+                    cmd = cmd.replace('$filepath', filepath)
+                    cmd = cmd.replace('$dirname', os.path.dirname(filepath))
+                    cmd = cmd.replace('$basename', os.path.basename(filepath))
                     def_line = line_no
     return cmd
 
