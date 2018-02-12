@@ -106,9 +106,9 @@ def get_inline_command(filename):
         for line in f:
             line_no = line_no + 1
             if line:
-                m = re.search('\/\/\s*@buildpro:\s*(.*)', line)
-                if m == None:
-                    m = re.search('\/\*\s*@buildpro:\s*(.*)\s*\*\/', line)
+                # should not depend on any language specific comments style
+                # as we want to keep portability across compilers
+                m = re.search('@buildpro:\s*(.*)', line)
                 if m:
                     if cmd != "":
                         raise Exception('Duplicate @buildpro in ' + filename + ":" + str(line_$
