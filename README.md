@@ -38,13 +38,14 @@ python buildpro.py -inline <file-path>
 This will search in the file specified by *file-path*
 for the following line
 
-```cpp
+```
 @buildpro <compiler> <arguments-list ...>
+```
+You can drop it in comments of your favourite language.
 
+```cpp
 // @buildpro <compiler> <arguments-list ...>
-
 /* @buildpro <compiler> <arguments-list ...> */
-
 ```
 
 The arguments may interpolate variables:
