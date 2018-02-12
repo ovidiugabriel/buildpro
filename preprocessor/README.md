@@ -16,7 +16,7 @@ Basicaly **PHP**+**Smarty** combination becomes your new preprocessor. You can u
 ###### Extensions
 
 * `@include_once`
-* `#import`
+* `#import` - ensures that a file is only ever included once so that you never have a problem with recursive includes. However, most decent header files protect themselves against this anyway, so it's not really that much of a benefit; For Microsoft C++ is used to incorporate information from a type library. The content of the type library is converted into C++ classes, mostly describing the COM interfaces.
 * `#include_next`
 * `@require_once`
 * `@require`
@@ -38,6 +38,6 @@ Basicaly **PHP**+**Smarty** combination becomes your new preprocessor. You can u
 
 * [GNU M4 Manual](https://www.gnu.org/software/m4/manual/m4.html)
 * [Smarty 3 Manual](http://www.smarty.net/docs/en/)
-* https://github.com/marcioAlmada/yay
-* http://www.sitepoint.com/php-macros-for-fun-and-profit/
-* http://re2c.org/
+* [Yay is a high level PHP preprocessor](https://github.com/marcioAlmada/yay)
+* [SitePoint - PHP Macros for Fun and Profit!, March 18, 2016 - By Christopher Pitt](http://www.sitepoint.com/php-macros-for-fun-and-profit/)
+* [re2c - a free and open-source lexer generator for C and C++](http://re2c.org/)
