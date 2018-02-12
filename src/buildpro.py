@@ -95,17 +95,28 @@ def buildpro_exit(code):
     print('Bye. [exit ' + str(code) + ']')
     exit(int(code))
 
+#
+# Grabs the '@buildpro' command specification when -inline switch is used
+#
 def get_inline_command(filename):
+    cmd = ""
+    line_no  = 0
+    def_line = 0
     with open(filename, 'r') as f:
         for line in f:
-            line = line.strip('/*\n ')
+            line_no = line_no + 1
             if line:
-                m = re.search('(buildpro|build):(.*)', line)
+                m = re.search('\/\/\s*@buildpro:\s*(.*)', line)
+                if m == None:
+                    m = re.search('\/\*\s*@buildpro:\s*(.*)\s*\*\/', line)
                 if m:
-                    cmd = m.group(2).strip()
-                    cmd = cmd.replace('__FILE__', filename)
-                    return cmd
-    return ""
+                    if cmd != "":
+                        raise Exception('Duplicate @buildpro in ' + filename + ":" + str(line_$
+
+                    cmd = m.group(1).strip()
+                    cmd = cmd.replace('$filepath', os.path.realpath(filename))
+                    def_line = line_no
+    return cmd
 
 """
     https://sublime-text-unofficial-documentation.readthedocs.org/en/latest/file_management/file_management.html\
