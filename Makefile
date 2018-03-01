@@ -42,21 +42,21 @@ update-buildpro:
 	curl $(MASTER)/test/buildpro_test.cc -o buildpro_test.cc
 	mv ./buildpro_test.cc test/
 
-install:
+install-home:
 	make update-buildpro
 	if [ -f setup.py ] ; then rm setup.py ; fi
 	curl $(MASTER)/setup.py -o setup.py
 	curl http://pyyaml.org/download/pyyaml/PyYAML-3.11.tar.gz -o PyYAML-3.11.tar.gz
 	tar -zxvf PyYAML-3.11.tar.gz
-	cd PyYAML-3.11/
+	pushd PyYAML-3.11/
 	if [ -e /usr/bin/python3 ] ; then /usr/bin/python3 setup.py install ; else python setup.py install; fi
-	cd ..
+	popd
 	rm PyYAML-3.11.tar.gz
 	chmod -R u+w PyYAML-3.11
-	if [ "`uname`" == "Linux" ] ; then rm -rf PyYAML-3.11 ; else rmdir /s /q PyYAML-3.11 ; fi
 	if [ -e /usr/bin/python3 ] ; then /usr/bin/python3 setup.py ; else python setup.py ; fi
 	chmod +x ./buildpro
-	sudo ln -s $(realpath ./buildpro) /usr/bin/buildpro
+	unlink ~/buildpro
+	ln -s $(realpath ./buildpro) ~/buildpro
 
 test-gcc:
 	cd test ; ../buildpro buildpro_test
