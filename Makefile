@@ -22,10 +22,10 @@ update-buildpro:
 
 	# compilers package
 	wget --no-check-certificate $(MASTER)/src/compiler/__init__.py
+	mkdir -p src/compiler
 	mv ./__init__.py src/compiler/
 
 	wget --no-check-certificate $(MASTER)/src/compiler/base.py
-	mkdir -p src/compiler
 	mv ./base.py src/compiler/
 
 	# gcc compiler
