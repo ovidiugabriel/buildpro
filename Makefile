@@ -1,4 +1,6 @@
 
+# Always use curl instead of wget, because curl is available also on MacOS
+
 MASTER = https://raw.githubusercontent.com/ovidiugabriel/buildpro/master
 
 none:
@@ -13,38 +15,38 @@ none:
 update-buildpro:
 	# since the repository contains more projects right now (that are not separated)
 	# just pick-up the needed files from the repo
-	wget --no-check-certificate $(MASTER)/src/buildpro.py
+	curl $(MASTER)/src/buildpro.py -o buildpro.py
 	mkdir -p src
 	mv ./buildpro.py src/
 
-	wget --no-check-certificate $(MASTER)/src/prototyping.py
+	curl $(MASTER)/src/prototyping.py -o prototyping.py
 	mv ./prototyping.py src/
 
 	# compilers package
-	wget --no-check-certificate $(MASTER)/src/compiler/__init__.py
+	curl $(MASTER)/src/compiler/__init__.py -o __init__.py
 	mkdir -p src/compiler
 	mv ./__init__.py src/compiler/
 
-	wget --no-check-certificate $(MASTER)/src/compiler/base.py
+	curl $(MASTER)/src/compiler/base.py -o base.py
 	mv ./base.py src/compiler/
 
 	# gcc compiler
-	wget --no-check-certificate $(MASTER)/src/compiler/gcc.py
+	curl $(MASTER)/src/compiler/gcc.py -o gcc.py 
 	mv ./gcc.py src/compiler
 
 	# download tests project
-	wget --no-check-certificate $(MASTER)/test/buildpro_test.project.yml
+	curl $(MASTER)/test/buildpro_test.project.yml -o buildpro_test.project.yml
 	mkdir -p test
 	mv ./buildpro_test.project.yml test/
 
-	wget --no-check-certificate $(MASTER)/test/buildpro_test.cc
+	curl $(MASTER)/test/buildpro_test.cc -o buildpro_test.cc
 	mv ./buildpro_test.cc test/
 
 install:
 	make update-buildpro
 	if [ -f setup.py ] ; then rm setup.py ; fi
-	wget --no-check-certificate $(MASTER)/setup.py
-	wget http://pyyaml.org/download/pyyaml/PyYAML-3.11.tar.gz
+	curl $(MASTER)/setup.py -o setup.py
+	curl http://pyyaml.org/download/pyyaml/PyYAML-3.11.tar.gz -o PyYAML-3.11.tar.gz
 	tar -zxvf PyYAML-3.11.tar.gz
 	cd PyYAML-3.11/
 	if [ -e /usr/bin/python3 ] ; then /usr/bin/python3 setup.py install ; else python setup.py install; fi
