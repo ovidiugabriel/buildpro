@@ -54,6 +54,7 @@ install:
 	if [ "`uname`" == "Linux" ] ; then rm -rf PyYAML-3.11 ; else rmdir /s /q PyYAML-3.11 ; fi
 	if [ -e /usr/bin/python3 ] ; then /usr/bin/python3 setup.py ; else python setup.py ; fi
 	chmod +x ./buildpro
+	sudo ln -s $(realpath ./buildpro) /usr/bin/buildpro
 
 test-gcc:
 	cd test ; ../buildpro buildpro_test
