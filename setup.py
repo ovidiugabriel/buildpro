@@ -5,7 +5,7 @@ import os
 buildpro_home = os.path.dirname(os.path.realpath(__file__)).replace('\\', '\\\\')
 with open('buildpro', 'w') as file:
     file.write('#!/bin/bash\n')
-    file.write('export PYTHONPATH=' + buildpro_home + '/PyYAML-3.11/lib')
+    file.write('export PYTHONPATH=' + buildpro_home + '/PyYAML-3.11/lib\n')
     file.write('python ' + buildpro_home + '/src/buildpro.py $*\n')
 
 # .bat files are temporary not in use, please use git-bash for windows
