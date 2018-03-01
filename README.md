@@ -7,6 +7,14 @@ buildpro stands for **Build Pro**ject, the action requested to build a project, 
 
 It is a tool for build professionals (with a role of build manager in some companies, or whatever ...)
 
+
+##### Installation
+
+```bash
+wget https://raw.githubusercontent.com/ovidiugabriel/buildpro/master/Makefile
+make install
+```
+
 ##### Usages
 
 **buildpro** was designed with **incremental builds** in mind, so each build run is a **no-clean build**
