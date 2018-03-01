@@ -11,7 +11,7 @@ It is a tool for build professionals (with a role of build manager in some compa
 ##### Installation
 
 ```bash
-wget https://raw.githubusercontent.com/ovidiugabriel/buildpro/master/Makefile
+curl https://raw.githubusercontent.com/ovidiugabriel/buildpro/master/Makefile -o Makefile
 make install
 ```
 
