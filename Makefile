@@ -48,14 +48,14 @@ install-home:
 	curl $(MASTER)/setup.py -o setup.py
 	curl http://pyyaml.org/download/pyyaml/PyYAML-3.11.tar.gz -o PyYAML-3.11.tar.gz
 	tar -zxvf PyYAML-3.11.tar.gz
-	pushd PyYAML-3.11/
+	cd PyYAML-3.11/
 	if [ -e /usr/bin/python3 ] ; then /usr/bin/python3 setup.py install ; else python setup.py install; fi
-	popd
+	cd ..
 	rm PyYAML-3.11.tar.gz
 	chmod -R u+w PyYAML-3.11
 	if [ -e /usr/bin/python3 ] ; then /usr/bin/python3 setup.py ; else python setup.py ; fi
 	chmod +x ./buildpro
-	unlink ~/buildpro
+	if [ -e ~/buildpro ] ; then unlink ~/buildpro ; fi
 	ln -s $(realpath ./buildpro) ~/buildpro
 
 test-gcc:
