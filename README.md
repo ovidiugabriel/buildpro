@@ -148,9 +148,10 @@ If `script` is specified, all other attributes become optional.
 deploy:
   ftp:
     script: ftp-script-path
-    mode: ascii|binary
+    mode: ascii | binary
     verbose: 'On'
     quote: pasv
+    protocol: ftp | ssh | tls
     host: localhost
     port: 21
     user: "... ftp username here ..."
