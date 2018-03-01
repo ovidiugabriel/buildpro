@@ -24,7 +24,7 @@ make install
 # Build a project with no-clean mode
 # Where the project file is projectname.project.yml
 #
-python buildpro.py projectname
+buildpro <project-name>
 ```
 
 But you can force clean also
@@ -33,14 +33,14 @@ But you can force clean also
 #
 # Build a project with clean enabled
 #
-clean=1 python buildpro.py projectname
+clean=1 buildpro <project-name>
 ```
 ###### Inline compiler invocation (-inline)
 
 If you don't want to create a new project, you can use buildpro to compile a single source file, without having to write a separate bash script or a makefile to compile it. Just embed the compile command in the source file.
 
 ```bash
-python buildpro.py -inline <file-path>
+buildpro -inline <file-path>
 ```
 
 This will search in the file specified by *file-path*
@@ -73,20 +73,20 @@ For example doing so:
 
 ```php
 /**
- * @proto static public main(args:Array):Int
+ * @proto static public main(args : Array) : Int
  */
 ```
 
 Will generate the following method signature into the **Haxe extern class** 
 
 ```haxe
-static public main(args:Array):Int;
+static public main(args : Array) : Int;
 ```
 
 
 ```bash
 # python buildpro.py -proto language class-name input-file output-file
-python buildpro.py -proto haxe barebone.$1 $1.class.php barebone/$1.hx
+buildpro -proto haxe barebone.$1 $1.class.php barebone/$1.hx
 haxe -php output barebone/$1.hx # other haxe files may follow
 cat -n barebone/$1.hx
 ```
