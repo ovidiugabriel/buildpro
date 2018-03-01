@@ -111,7 +111,7 @@ def get_inline_command(filename):
                 m = re.search('@buildpro:\s*(.*)', line)
                 if m:
                     if cmd != "":
-                        raise Exception('Duplicate @buildpro in ' + filename + ":" + str(line_$
+                        raise Exception('Duplicate @buildpro in ' + filename + ":" + str(line_no))
 
                     cmd = m.group(1).strip()
                     filepath = os.path.realpath(filename)
