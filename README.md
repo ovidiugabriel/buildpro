@@ -10,9 +10,11 @@ It is a tool for build professionals (with a role of build manager in some compa
 
 ##### Installation
 
+Install it in your home folder (in case you don't have root access)
+
 ```bash
 curl https://raw.githubusercontent.com/ovidiugabriel/buildpro/master/Makefile -o Makefile
-make install
+make install-home
 ```
 
 ##### Usages
