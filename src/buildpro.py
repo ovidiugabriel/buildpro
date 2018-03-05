@@ -122,31 +122,73 @@ def get_inline_command(filename):
     return cmd
 
 """
-    https://sublime-text-unofficial-documentation.readthedocs.org/en/latest/file_management/file_management.html\
-    #the-sublime-project-format
-"""
-def sublime_project():
-    # TODO: Work sublime project generator
-    data = {"folders":[]}
-    data["folders"].append({"file_exclude_patterns":[], "name":"", "path":""})
-
-    print(json.dumps(data, sort_keys=True,
-        indent=4, separators=(',', ': ') ))
-
-
-"""
-    Unlike .sublime-project files, .sublime-workspace files are not meant to be shared or edited manually.
-    You should never commit .sublime-workspace files into a source code repository.
-"""
-def sublime_workspace():
-    # So this function is ignoring .sublime-workspace file for your given versioning system
-    pass
-
-"""
     Executes PHP command and returns the output
 """
 def php(cmd, show_echo):
     return shell_exec("/usr/bin/env php -r '" + cmd + ";'", show_echo)
+
+class SublimeFolder:
+    def __init__(self, name, path):
+        self.name = name
+        self.path = path
+
+        self.file_exclude_patterns   = []
+        self.binary_file_patterns    = []
+        self.folder_exclude_patterns = []
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "path": self.path,
+            "file_exclude_patterns": self.file_exclude_patterns,
+            "binary_file_patterns": self.binary_file_patterns,
+            "folder_exclude_patterns": self.folder_exclude_patterns
+        }
+
+class SublimeProject:
+    def __init__(self):
+        self.settings = []
+        self.build_systems = []
+        self.folders = []
+
+    def add_build_system(self, cmd):
+        self.build_systems.append({"cmd": cmd})
+
+    def add_folder(self, folder):
+        print("+ " + folder.path)
+        self.folders.append(folder.to_dict())
+        pass
+
+
+    """
+        * https://sublime-text-unofficial-documentation.readthedocs.org/en/latest/file_management/file_management.html\
+        #the-sublime-project-format
+
+        * http://docs.sublimetext.info/en/latest/reference/projects.html
+    """
+    def sublime_project(self):
+        # TODO: Work sublime project generator
+        data = {}
+        if len(self.build_systems) > 0:
+            data["build_systems"] = self.build_systems
+
+        if len(self.settings) > 0:
+            data["settings"] = self.settings
+
+        if len(self.folders) > 0:
+            data["folders"] = self.folders
+
+        return json.dumps(data, sort_keys=True, indent=4, separators=(',', ': ') )
+
+
+def read_sublime_project(path):
+    sublime_files = glob.glob(path + '/*.sublime-project')
+    project_path = sublime_files[0]
+
+    buildpro_print("Sublime Project: '" + os.path.basename(project_path) + "'")
+    return json.load(open(project_path))
+
+
 
 #
 # ---------------------------------------------------------------------------------------------------------
@@ -174,14 +216,34 @@ if '-proto' == sys.argv[1].strip():
         buildpro_exit(int(str(ex)))
     buildpro_exit(0)
 
-if '-sublime-project' == sys.argv[1].strip():
-    sublime_project()
+if '-create' == sys.argv[1].strip():
+    folder_path = sys.argv[2]
+    buildpro_print('Create project for: ' + os.path.realpath(folder_path))
+    folder_name = folder_path.strip('/').replace('/', '-')
+    # create a new folder
+    folder = SublimeFolder(folder_name, os.path.realpath(folder_path))
+
+    # and add the folder to the project
+    project = SublimeProject()
+    project.add_folder(folder)
+
+    project_file = os.path.realpath(folder_path) + '/' + folder_name + '.sublime-project'
+    with open(project_file, 'w+') as file_handle:
+        file_handle.write(project.sublime_project())
+    if os.path.isfile(project_file):
+        print('Saved ' + project_file)
     buildpro_exit(0)
 
-if '-sublime-workspace' == sys.argv[1].strip():
-    sublime_workspace()
-    buildpro_exit(0)
+if '-list' == sys.argv[1].strip():
+    data = read_sublime_project(sys.argv[2])
 
+    for folder in data["folders"]:
+        name = folder['name'] if 'name' in folder else os.path.basename(folder["path"])
+        print('Path: ' + folder["path"])
+        print('Name: ' + name)
+        print('')
+    buildpro_exit(0)
+   
 #
 # Continue for non-proto usage
 #
