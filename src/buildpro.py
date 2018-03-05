@@ -54,6 +54,9 @@ import glob
 from compiler.base import compiler_base
 from prototyping import proto
 
+from SublimeFolder import SublimeFolder
+from SublimeProject import SublimeProject
+
 # Some 'contants' definitions
 BOLD="\033[1m"
 RESET="\033[0m"
@@ -128,68 +131,12 @@ def get_inline_command(filename):
 def php(cmd, show_echo):
     return shell_exec("/usr/bin/env php -r '" + cmd + ";'", show_echo)
 
-class SublimeFolder:
-    def __init__(self, name, path):
-        self.name = name
-        self.path = path
-
-        self.file_exclude_patterns   = []
-        self.binary_file_patterns    = []
-        self.folder_exclude_patterns = []
-
-    def to_dict(self):
-        return {
-            "name": self.name,
-            "path": self.path,
-            "file_exclude_patterns": self.file_exclude_patterns,
-            "binary_file_patterns": self.binary_file_patterns,
-            "folder_exclude_patterns": self.folder_exclude_patterns
-        }
-
-class SublimeProject:
-    def __init__(self):
-        self.settings = []
-        self.build_systems = []
-        self.folders = []
-
-    def add_build_system(self, cmd):
-        self.build_systems.append({"cmd": cmd})
-
-    def add_folder(self, folder):
-        print("+ " + folder.path)
-        self.folders.append(folder.to_dict())
-        pass
-
-
-    """
-        * https://sublime-text-unofficial-documentation.readthedocs.org/en/latest/file_management/file_management.html\
-        #the-sublime-project-format
-
-        * http://docs.sublimetext.info/en/latest/reference/projects.html
-    """
-    def sublime_project(self):
-        # TODO: Work sublime project generator
-        data = {}
-        if len(self.build_systems) > 0:
-            data["build_systems"] = self.build_systems
-
-        if len(self.settings) > 0:
-            data["settings"] = self.settings
-
-        if len(self.folders) > 0:
-            data["folders"] = self.folders
-
-        return json.dumps(data, sort_keys=True, indent=4, separators=(',', ': ') )
-
-
 def read_sublime_project(path):
     sublime_files = glob.glob(path + '/*.sublime-project')
     project_path = sublime_files[0]
 
     buildpro_print("Sublime Project: '" + os.path.basename(project_path) + "'")
     return json.load(open(project_path))
-
-
 
 #
 # ---------------------------------------------------------------------------------------------------------
