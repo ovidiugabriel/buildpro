@@ -1,0 +1,3 @@
+
+class HTMLElement : DOMElement {
+}
