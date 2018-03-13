@@ -1,4 +1,5 @@
  
- class DOMElement : Node {
- }
- 
+class DOMElement : Node {
+    string tagName;
+    string innerText;
+}
