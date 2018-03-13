@@ -1,4 +1,4 @@
 
-alias HTMLElement Element;
-class HTMLElement : DOMElement {
+alias HtmlElement HTMLHtmlElement;
+class HtmlElement : Element {
 }
