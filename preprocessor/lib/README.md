@@ -16,6 +16,22 @@ Reference: http://www.cplusplus.com/doc/tutorial/variables/
 
 Implemented in: [safe/type-size.rkt](https://github.com/ovidiugabriel/buildpro/blob/master/preprocessor/lib/safe/type-size.rkt)
 
+Every type is implemented as a range.
+This approach is heavily inspired by Ada constrained types (where a subtype is a type together with an associated constraint)
+
+> Their major purpose, is for greater program reliability: a constraint expresses a logical requirement on our program in an explicit manner, and it therefore opens up the possibility of reporting violations of this logical requirement, should they ever occur. -- "Rationale for the Design of the Ada® Programming Language"
+
+This method is very powerful, yet flexible and allows to do a lot of things in a safe manner,
+for example to define separate types for odd and even numbers.
+
+```racket
+;; Type for all odd numbers between [1 and 65535]
+(define odd_t (type 2 (range 1 65535 2)))
+
+;; Type for all even numbers between [0 and 65534]
+(define even_t (type 2 (range 0 65534 2)))
+```
+
 #### climits
 
 ##### `(range-max type)`
