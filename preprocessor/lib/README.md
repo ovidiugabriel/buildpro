@@ -1,6 +1,8 @@
 
 ### Typing
 
+Reference: http://www.cplusplus.com/doc/tutorial/variables/
+
 | Type     | Size (byte count) | Range Min.           | Range Max.           | Range Step |
 |----------|-------------------|----------------------|----------------------|------------|
 | uint8_t  | 1                 | 0                    | 255                  | 1          |
@@ -13,3 +15,11 @@
 | int64_t  | 8                 | -9223372036854775808 | 9223372036854775807  | 1          |
 
 Implemented in: [safe/type-size.rkt](https://github.com/ovidiugabriel/buildpro/blob/master/preprocessor/lib/safe/type-size.rkt)
+
+#### climits
+
+##### `(range-max type)`
+
+##### `(range-min type)`
+
+Reference: http://www.cplusplus.com/reference/climits/
