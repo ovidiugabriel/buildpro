@@ -43,15 +43,20 @@ cout << decltype(c); // error: not possible
 In this case we have to rely on some macros.
 
 ```cpp
-#define max_of(x) x ## _MAX
-cout << max_of(INT); // works fine
-
 #define max_of(x) x ## _max
-#define int_max INT_MAX
-cout << max_of(int); // we forced it by declaring a lowercase alias
-```
+#define int_max INT_MAX // we forced it by declaring a lowercase alias
 
-But beyond the traditional preprocessor we have another way where the preprocessor is type aware.
+cout << max_of(int); // works fine
+
+cout << max_of(decltype(c)); // error: not possible
+
+// What about unsigned?
+#define uint_max UINT_MAX    
+typedef unsigned int uint;
+    
+cout << max_of(uint); // works for uint
+```
+You see, we have very limited usage. But beyond the traditional preprocessor we have another way where the preprocessor is type aware.
 
 
 ##### `(range-max type)`
