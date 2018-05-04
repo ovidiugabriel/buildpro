@@ -34,6 +34,26 @@ for example to define separate types for odd and even numbers.
 
 #### climits
 
+Let's see how we can get the value of `INT_MAX` as a function of `int` type. Using RTTI (`typeid` operator and `type_info` class) is out of question because it does not apply to primitive/fundamental types. It is also not possible to use `decltype` for this purpose.
+
+```cpp
+int c;
+cout << decltype(c); // error: not possible
+```
+In this case we have to rely on some macros.
+
+```cpp
+#define max_of(x) x ## _MAX
+cout << max_of(INT); // works fine
+
+#define max_of(x) x ## _max
+#define int_max INT_MAX
+cout << max_of(int); // we forced it by declaring a lowercase alias
+```
+
+But beyond the traditional preprocessor we have another way where the preprocessor is type aware.
+
+
 ##### `(range-max type)`
 
 Returns the value for `<type>_MAX` by reading the value of `max` member of `range` struct.
