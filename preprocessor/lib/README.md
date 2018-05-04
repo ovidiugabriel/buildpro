@@ -24,7 +24,7 @@ Returns the value for `<type>_MAX` by reading the value of `max` member of `rang
 
 ##### `(range-min type)`
 
-Returns the value for `<type>_MIN`
+Returns the value for `<type>_MIN` by reading the value of `min` member of `range` struct.
 
 Reference: http://www.cplusplus.com/reference/climits/
 
