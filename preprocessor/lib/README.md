@@ -32,7 +32,7 @@ for example to define separate types for odd and even numbers.
 (define even_t (type 2 (range 0 65534 2)))
 ```
 
-#### climits
+#### Limits of integral types
 
 Let's see how we can get the value of `INT_MAX` as a function of `int` type. Using RTTI (`typeid` operator and `type_info` class) is out of question because it does not apply to primitive/fundamental types. It is also not possible to use `decltype` for this purpose.
 
