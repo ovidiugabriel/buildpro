@@ -6,26 +6,13 @@
 #  Title:       buildpro.py
 #
 #  Created on:  24.10.2015 at 08:59:46
-#  Email:       ovidiugabriel@gmail.com
-#  Copyright:   (C) 2016 ICE Control srl. All Rights Reserved.
+#  Email:       ovidiugabriel ät gmail punkt com
+#  Copyright:   (C) 2018 SoftICE Development OÜ. All Rights Reserved.
 #
 #  $Id$
 #
 # *************************************************************************
 #
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# History (Start).
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#
-# Date         Name    Reason
-# -------------------------------------------------------------------------
-# 20.02.2017           Fixed Python3 exception syntax
-# 02.06.2016           Replaced enumerate() with values()
-# 03.03.2016           Fixed .exe target on Windows
-# 02.03.2016           Small final_cmd changes
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# History (END).
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #
 # The main idea of this tool is that it can generate tupfiles, makefiles, etc.
@@ -111,8 +98,8 @@ def get_inline_command(filename):
             line_no = line_no + 1
             if line:
                 # should not depend on any language specific comments style
-                # as we want to keep portability across compilers
-                m = re.search('@buildpro:\s*(.*)', line)
+                # as we want to keep portability across compilers     
+                m = re.search('@buildpro\s+(.*)', line)
                 if m:
                     if cmd != "":
                         raise Exception('Duplicate @buildpro in ' + filename + ":" + str(line_no))
@@ -151,10 +138,13 @@ if 1 == len(sys.argv):
 if '-inline' == sys.argv[1].strip():
     cmd = get_inline_command(sys.argv[2])
     buildpro_print('Running build command ...')
-    cmd_output = shell_exec(cmd, True)
-    print('')
-    buildpro_print('Flushing output ...')
-    print(cmd_output)
+    try:
+        cmd_output = shell_exec(cmd, True)
+        print('')
+        buildpro_print('Flushing output ...')
+        print(cmd_output)
+    except Exception as ex:
+        buildpro_exit(ex.returncode)
     buildpro_exit(0)
 
 if '-proto' == sys.argv[1].strip():
