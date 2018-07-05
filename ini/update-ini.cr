@@ -31,7 +31,6 @@ text = INI.build(values, true)
 
 ini_file = File.new(ARGV[0], "w")
 if ini_file
-    ini_file.puts(text)
+    ini_file.puts(text.sub("[]\n", ""))
     ini_file.close()
 end
-
