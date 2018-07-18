@@ -99,8 +99,7 @@
 
 (let loop ()
   (let ([line (read in)])
-    (display line)
-    ))
+    (display line) ))
 
 #|
 (let loop ()
