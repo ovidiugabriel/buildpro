@@ -5,19 +5,11 @@
 ;; ============================================================================
 
 (require xml)
+(require racket/cmdline)
 
-(define expr (string->xexpr "<html>
-    <head>
-        <title>Hello</title>
-    </head>
-    <body bgcolor=\"fffff\" color=\"white\">
-      <p>Hi</p>
-    </body>
-</html>"))
-
-;; ***
+;; ----------------------------------------------------------------------------
 ;; Functions
-;; ***
+;; ----------------------------------------------------------------------------
 
 (define *stack* empty)
 
@@ -77,12 +69,42 @@
     (parse-html (cdr line))
     (end-element (car line)) ) )
 
-;; ***
+;; ----------------------------------------------------------------------------
 ;; Main Code
-;; ***
+;; ----------------------------------------------------------------------------
 
-(define in (open-input-string (~a expr) ) )
+(define param-error-reporting (make-parameter #f))
+(define param-display-errors (make-parameter #f))
+
+(define file-to-compile
+  (command-line
+   #:multi
+   ["--error-reporting" e
+                        ""
+                        (param-error-reporting e)]
+   
+   ["--display-errors" d
+                       ""
+                       (param-display-errors d)]
+   
+   #:args (filename)
+   filename))
+
+(define expr
+  (xml->xexpr
+   (document-element
+    (read-xml (open-input-file file-to-compile)) )))
+
+(define in (open-input-string (~s expr) ) )
+
+(let loop ()
+  (let ([line (read in)])
+    (display line)
+    ))
+
+#|
 (let loop ()
   (let ([line (read in)])
     (read-datum line)
-    (unless (eof-object? line) (loop))))
+    (unless (eof-object? line) (loop)) ) )
+|#
