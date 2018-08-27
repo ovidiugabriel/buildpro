@@ -14,6 +14,7 @@ Install it in your home folder (in case you don't have root access)
 
 ```bash
 curl https://raw.githubusercontent.com/ovidiugabriel/buildpro/master/Makefile -o Makefile
+make update-buildpro
 make install-home
 ```
 [Watch Video](https://www.youtube.com/watch?v=_lZM-_AQUOA)
@@ -181,18 +182,9 @@ deploy:
 
 **buildpro** is based on PyYAML library, so you need to install **PyYAML** before starting with **buildpro**
 
-1. download PyYAML 3.11 from [PyYAML Page](http://pyyaml.org/wiki/PyYAML)
-2. Run `python setup.py install`
-
 ```bash
-wget http://pyyaml.org/download/pyyaml/PyYAML-3.11.tar.gz
-tar -zxvf PyYAML-3.11.tar.gz
-cd PyYAML-3.11/
-
-sudo python setup.py install
+pip install pyyaml
 ```
-
-Note: On Windows the path of wget is something like:  `/cygdrive/c/Program\ Files/GnuWin32/bin/wget.exe`
 
 ###### Dependencies Scanning
 
