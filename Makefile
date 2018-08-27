@@ -22,6 +22,12 @@ update-buildpro:
 	curl -s $(MASTER)/src/prototyping.py -o prototyping.py
 	mv ./prototyping.py src/
 
+	curl -s $(MASTER)/src/sublime_folder.py -o sublime_folder.py
+	mv ./sublime_folder.py src/
+
+	curl -s $(MASTER)/src/sublime_project.py -o sublime_project.py
+	mv ./sublime_project.py src/
+
 	# compilers package
 	curl -s $(MASTER)/src/compiler/__init__.py -o __init__.py
 	mkdir -p src/compiler
@@ -43,21 +49,14 @@ update-buildpro:
 	mv ./buildpro_test.cc test/
 
 install-home:
-	make update-buildpro
 	if [ -f setup.py ] ; then rm setup.py ; fi
 	curl -s $(MASTER)/setup.py -o setup.py
-	curl http://pyyaml.org/download/pyyaml/PyYAML-3.11.tar.gz -o PyYAML-3.11.tar.gz
-	tar -zxvf PyYAML-3.11.tar.gz
-	cd PyYAML-3.11/
-	if [ -e /usr/bin/python3 ] ; then /usr/bin/python3 setup.py install ; else python setup.py install; fi
-	cd ..
-	rm PyYAML-3.11.tar.gz
-	chmod -R u+w PyYAML-3.11
+	pip install pyyaml
 	if [ -e /usr/bin/python3 ] ; then /usr/bin/python3 setup.py ; else python setup.py ; fi
 	chmod +x ./buildpro
-	if [ ! -L ~/buildpro ] ; then ln -s $(shell realpath ./buildpro) ~/buildpro ; fi
+	if [ ! -f ~/buildpro ] ; then ln -s $(shell realpath ./buildpro) ~/buildpro ; fi
+	if [ ! -f ~/.bashrc ] ; then touch ~/.bashrc ; fi
 	if [ $(shell cat ~/.bashrc  | grep buildpro | wc -l) == "0" ] ; then echo "alias buildpro='~/buildpro'" >> ~/.bashrc ; fi
-	source ~/.bashrc
 
 test-gcc:
 	cd test ; ~/buildpro buildpro_test
