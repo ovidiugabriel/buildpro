@@ -1,7 +1,7 @@
 
 import json
 
-class SublimeProject:
+class sublime_project:
     def __init__(self):
         self.settings = []
         self.build_systems = []
