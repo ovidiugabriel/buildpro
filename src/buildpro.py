@@ -41,8 +41,8 @@ import glob
 from compiler.base import compiler_base
 from prototyping import proto
 
-from SublimeFolder import SublimeFolder
-from SublimeProject import SublimeProject
+from sublime_folder import sublime_folder
+from sublime_project import sublime_project
 
 # Some 'contants' definitions
 BOLD="\033[1m"
@@ -98,7 +98,7 @@ def get_inline_command(filename):
             line_no = line_no + 1
             if line:
                 # should not depend on any language specific comments style
-                # as we want to keep portability across compilers     
+                # as we want to keep portability across compilers
                 m = re.search('@buildpro\s+(.*)', line)
                 if m:
                     if cmd != "":
@@ -159,10 +159,10 @@ if '-create' == sys.argv[1].strip():
     buildpro_print('Create project for: ' + os.path.realpath(folder_path))
     folder_name = folder_path.strip('/').replace('/', '-')
     # create a new folder
-    folder = SublimeFolder(folder_name, os.path.realpath(folder_path))
+    folder = sublime_folder(folder_name, os.path.realpath(folder_path))
 
     # and add the folder to the project
-    project = SublimeProject()
+    project = sublime_project()
     project.add_folder(folder)
 
     project_file = os.path.realpath(folder_path) + '/' + folder_name + '.sublime-project'
@@ -181,7 +181,7 @@ if '-list' == sys.argv[1].strip():
         print('Name: ' + name)
         print('')
     buildpro_exit(0)
-   
+
 #
 # Continue for non-proto usage
 #
