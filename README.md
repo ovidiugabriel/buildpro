@@ -102,7 +102,7 @@ cat -n barebone/$1.hx
 
 The file `<project_name>.project.yml` is an [YAML](http://www.yaml.org/spec/1.2/spec.html) file, and contains the following sections:
 
-* `var` : variables
+* `environment` : environment variables section; using this you are able to override environment variable values
 * `defines` : dictionary (key:string, value:string)
 * `includes` : list of strings (in `qmake` it is called `INCLUDEPATH`)
 * `sources` : list of strings
