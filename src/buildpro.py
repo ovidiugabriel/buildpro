@@ -37,6 +37,8 @@ import re
 import json
 import platform
 import glob
+import shlex
+import io
 
 from compiler.base import compiler_base
 from prototyping import proto
@@ -57,7 +59,11 @@ env = os.environ
 def shell_exec(cmd, show_echo):
     if show_echo:
         print(cmd)
-    return subprocess.check_output(cmd, shell=True).decode('utf-8').rstrip()
+
+    proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    for line in io.TextIOWrapper(proc.stdout, encoding='UTF-8'):
+        sys.stdout.write(line)
+        sys.stdout.flush()
 
 #
 # Generates the Lua Script code for the Tupfile
@@ -73,11 +79,15 @@ def get_tupfile(deps):
         tup_out += (': ' + key + ' |> ' + deps[key][COMMAND] + ' |> ' + deps[key][OUTPUT] + "\n")
     return tup_out
 
+def bold(text):
+    return BOLD + text + RESET
+
 #
 # Prints a stage name using the buildpro banner
 #
 def buildpro_print(text):
-    print(BOLD + '[buildpro] ' + text + RESET);
+    print(bold('[buildpro] ' + text))
+    sys.stdout.flush()
 
 #
 # Prints the goodbye message and exits the script
@@ -131,9 +141,30 @@ def read_sublime_project(path):
 # ---------------------------------------------------------------------------------------------------------
 #
 
-if 1 == len(sys.argv):
-    print('Error: Invalid command line. Specify the project name.')
-    buildpro_exit(1)
+def print_usage_option(options, description):
+    print(bold('    ' + options))
+    print('        ' + description)
+    print('')
+
+def print_usage():
+    print(bold('USAGE'))
+    print('    ' + bold('buildpro') + ' <project-name>')
+    print('        builds a project where the project file is <project-name>.project.yml')
+    print('')
+    print('    ' + bold('buildpro') + ' [option] [params ...]')
+    print('')
+    print(bold('OPTIONS'))
+    print_usage_option('-h, -help, --help', 'display this help and exit')
+    print_usage_option('-inline <file-path>', 'invoke compiler using inline @buildpro annotation')
+    print_usage_option('-proto <language> <class-name> <input-file> <output-file>', '')
+    print_usage_option('-create', '')
+    print_usage_option('-list', '')
+
+
+if 1 == len(sys.argv) or '-h' == sys.argv[1].strip():
+    # print('Error: Invalid command line. Specify the project name.')
+    print_usage()
+    buildpro_exit(0)
 
 if '-inline' == sys.argv[1].strip():
     cmd = get_inline_command(sys.argv[2])
@@ -200,7 +231,14 @@ if data == None:
 #
 # Compiler option is MANDATORY!!!
 #
-compiler = compiler_base.factory(data['compiler'])
+if 'compiler' in data:
+    compiler = compiler_base.factory(data['compiler'])
+else:
+    buildpro_print('No compiler backend requested')
+    compiler = compiler_base()
+    command = data['command'].format(**env)
+    compiler.set_command(command)
+    print('Using ' + command)
 
 # http://scribu.net/blog/python-equivalents-to-phps-foreach.html
 
