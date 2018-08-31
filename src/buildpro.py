@@ -7,7 +7,8 @@
 #
 #  Created on:  24.10.2015 at 08:59:46
 #  Email:       ovidiugabriel ät gmail punkt com
-#  Copyright:   (C) 2018 SoftICE Development OÜ. All Rights Reserved.
+#  Copyright:   (C) 2015-2018 ICE Control srl. All Rights Reserved.
+#               (C) 2018 SoftICE Development OÜ. All Rights Reserved.
 #
 #  $Id$
 #
@@ -39,6 +40,7 @@ import platform
 import glob
 import shlex
 import io
+import termcolor
 
 from compiler.base import compiler_base
 from prototyping import proto
@@ -60,7 +62,8 @@ def shell_exec(cmd, show_echo):
     if show_echo:
         print(cmd)
 
-    proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
     for line in io.TextIOWrapper(proc.stdout, encoding='UTF-8'):
         sys.stdout.write(line)
         sys.stdout.flush()
@@ -167,13 +170,9 @@ if 1 == len(sys.argv) or '-h' == sys.argv[1].strip():
     buildpro_exit(0)
 
 if '-inline' == sys.argv[1].strip():
-    cmd = get_inline_command(sys.argv[2])
     buildpro_print('Running build command ...')
     try:
-        cmd_output = shell_exec(cmd, True)
-        print('')
-        buildpro_print('Flushing output ...')
-        print(cmd_output)
+        shell_exec(get_inline_command(sys.argv[2]), True)
     except Exception as ex:
         buildpro_exit(ex.returncode)
     buildpro_exit(0)
@@ -221,12 +220,22 @@ project_file = sys.argv[1].strip() + '.project.yml'
 stream = open(project_file, 'r')
 data = yaml.load(stream)
 
+rootdir = os.path.realpath(data['working-directory']) if ('working-directory' in data) else  os.getcwd()
+os.chdir(rootdir)
+
 if data == None:
     print('Error: Invalid project file.')
     buildpro_exit(1)
 
 # TODO: `final_cmd` must be formatted as specified in the .project.yml file.
 # The `final_cmd` may be used to run the compiler directly but also to generate Tupfile
+
+for d in data['environment']:
+    key, value = d.popitem()
+    env[key] = value.format(**env)
+
+for value in data['require']:
+    shell_exec(value.format(**env), True)
 
 #
 # Compiler option is MANDATORY!!!
@@ -307,7 +316,7 @@ try:
     log_file_name = 'buildpro.log'
     compiler.set_logfile(compiler_base.LOG_TYPE_BOTH, log_file_name)
     compiler.set_verbose(True)
-    final_cmd_output = shell_exec(compiler.get_command(), True)
+    shell_exec(compiler.get_command(), True)
 
     if os.path.exists(log_file_name):
         buildpro_print('Printing logs ...')
@@ -330,9 +339,9 @@ if artifact_exists:
             cmd = cmd.format(**env).replace('$', '')
 
             buildpro_print('Deploying ...')
-            print(shell_exec(cmd, True))
+            shell_exec(cmd, True)
 else:
-    print(output + ' does not exists.')
+    termcolor.cprint(output + ' does not exists.')
     buildpro_exit(1)
 
 # if os.path.isfile('./' + output):
