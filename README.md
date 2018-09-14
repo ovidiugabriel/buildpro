@@ -19,8 +19,7 @@ make install-home
 ```
 [Watch Video](https://www.youtube.com/watch?v=_lZM-_AQUOA)
 
-![gif](https://1.bp.blogspot.com/-JRTq-Z5CsK8/WpnZa36VI4I/AAAAAAAAYEk/PifA0p9vk7wZyoDRJ6FNc-BGsaek-f65ACLcBGAs/s1600/freegifmaker.me_2bHGF.gif)
-
+[![asciicast](https://asciinema.org/a/201280.png)](https://asciinema.org/a/201280)
 
 ##### Usages
 
