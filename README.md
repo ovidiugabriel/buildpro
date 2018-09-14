@@ -17,8 +17,6 @@ curl https://raw.githubusercontent.com/ovidiugabriel/buildpro/master/Makefile -o
 make update-buildpro
 make install-home
 ```
-[Watch Video](https://www.youtube.com/watch?v=_lZM-_AQUOA)
-
 [![asciicast](https://asciinema.org/a/201280.png)](https://asciinema.org/a/201280)
 
 ##### Usages
