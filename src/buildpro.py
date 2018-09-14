@@ -6,9 +6,9 @@
 #  Title:       buildpro.py
 #
 #  Created on:  24.10.2015 at 08:59:46
-#  Email:       ovidiugabriel ät gmail punkt com
+#  Email:       ovidiugabriel _t gmail punkt com
 #  Copyright:   (C) 2015-2018 ICE Control srl. All Rights Reserved.
-#               (C) 2018 SoftICE Development OÜ. All Rights Reserved.
+#               (C) 2018 SoftICE Development Oy. All Rights Reserved.
 #
 #  $Id$
 #
