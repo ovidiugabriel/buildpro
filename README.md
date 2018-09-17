@@ -123,6 +123,13 @@ Preconditions and postcoditions utilities.
 
 compiler: gcc
 
+environment:
+-  <name>: <value>
+
+require:
+-  <script-path>
+
+
 defines:
   NULL_PTR: 0
 
@@ -132,14 +139,17 @@ includes: # in qmake it is called INCLUDEPATH
 sources:
   - main.c
 
+objects:
+  - *.o
+
 library_paths:
   - /usr/lib
 
 libraries:
   - glibc
 
-artifact:
-  name: main
+artifacts:
+  - main
 
 ```
 
