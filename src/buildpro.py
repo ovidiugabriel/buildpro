@@ -6,11 +6,8 @@
 #  Title:       buildpro.py
 #
 #  Created on:  24.10.2015 at 08:59:46
-#  Email:       ovidiugabriel _t gmail punkt com
 #  Copyright:   (C) 2015-2018 ICE Control srl. All Rights Reserved.
-#               (C) 2018 SoftICE Development Oy. All Rights Reserved.
-#
-#  $Id$
+#               (C) 2018 SoftICE Development OÜ. All Rights Reserved.
 #
 # *************************************************************************
 #
@@ -41,6 +38,7 @@ import glob
 import shlex
 import io
 import termcolor
+import fnmatch
 
 from compiler.base import compiler_base
 from prototyping import proto
@@ -65,7 +63,16 @@ def shell_exec(cmd, show_echo):
     proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     for line in io.TextIOWrapper(proc.stdout, encoding='UTF-8'):
-        sys.stdout.write(line)
+        if line.startswith('Error'):
+            termcolor.cprint(line, 'red')
+        elif line.startswith('** error'):
+            termcolor.cprint(line, 'red')
+        elif re.match(r"\*\*\* [0-9]+ error", line):
+            termcolor.cprint(line, 'red')
+        elif line.startswith('Warning'):
+            termcolor.cprint(line, 'yellow')
+        else:
+            sys.stdout.write(line)
         sys.stdout.flush()
 
 #
@@ -78,9 +85,11 @@ def get_tupfile(deps):
     OUTPUT  = 1;
 
     tup_out = ''
-    for key in deps:
-        tup_out += (': ' + key + ' |> ' + deps[key][COMMAND] + ' |> ' + deps[key][OUTPUT] + "\n")
-    return tup_out
+    for line in deps:
+        key, value = line.popitem()
+        tup_out += ': ' + key + ' |> ' + value[0] + ' |> ' + value[1] + "\n"
+
+    return tup_out + "\n"
 
 def bold(text):
     return BOLD + text + RESET
@@ -138,11 +147,24 @@ def read_sublime_project(path):
     buildpro_print("Sublime Project: '" + os.path.basename(project_path) + "'")
     return json.load(open(project_path))
 
-#
-# ---------------------------------------------------------------------------------------------------------
-# End functions
-# ---------------------------------------------------------------------------------------------------------
-#
+def parse_project(project):
+    project_file = project + '.project.yml'
+    stream = open(project_file, 'r')
+    return yaml.load(stream)
+
+
+def glob_tup_sources(deps, input_pattern, runner, output_pattern):
+    output_pattern = output_pattern.replace('\\', '\\\\')
+    for filename in glob.glob(input_pattern):
+        inputf       = filename.replace('\\', '/')
+        object_path = re.sub('(.*)(\..*)$', output_pattern.replace('*', '\\1'), os.path.basename(inputf))
+        if object_path in tup_objects:
+            print("ERROR: Unable to create output file '"+object_path+"' because it is an output object for both")
+            print(" * " + tup_objects[object_path] + ' AND ' + inputf)
+            buildpro_exit(1)
+
+        deps.append({inputf: [runner + ' '+ inputf, object_path.replace('\\', '/')]})
+        tup_objects[object_path] = inputf
 
 def print_usage_option(options, description):
     print(bold('    ' + options))
@@ -163,6 +185,12 @@ def print_usage():
     print_usage_option('-create', '')
     print_usage_option('-list', '')
 
+
+#
+# ---------------------------------------------------------------------------------------------------------
+# End functions
+# ---------------------------------------------------------------------------------------------------------
+#
 
 if 1 == len(sys.argv) or '-h' == sys.argv[1].strip():
     # print('Error: Invalid command line. Specify the project name.')
@@ -212,16 +240,38 @@ if '-list' == sys.argv[1].strip():
         print('')
     buildpro_exit(0)
 
+
+if '-create-tupfile' == sys.argv[1].strip():
+    tup_objects = {}
+
+    # TODO: buildpro to be able to generate compiler and linker wrappers
+    compiler_w = './run-bcc32.bat'
+    linker_w   = './run-ilink32.bat'
+
+    data = parse_project(sys.argv[2].strip())
+
+    rootdir = os.path.realpath(data['working-directory']) if ('working-directory' in data) else  os.getcwd()
+    objects_pattern = os.path.relpath(rootdir + '/' + data['objects'])
+
+    artifacts_list = list(map(lambda artifact : os.path.relpath(rootdir + '/' + artifact).replace('\\', '/'), data['artifacts'] ))
+
+    deps = []
+    for pattern in data['sources']:
+        glob_tup_sources(deps, pattern, compiler_w, objects_pattern)
+    deps.append({objects_pattern : [linker_w + ' ' + objects_pattern, ' '.join( artifacts_list )]})
+    tup_text = get_tupfile(deps)
+    print(tup_text)
+    buildpro_exit(0)
+
 #
 # Continue for non-proto usage
 #
 
-project_file = sys.argv[1].strip() + '.project.yml'
-stream = open(project_file, 'r')
-data = yaml.load(stream)
+data = parse_project(sys.argv[1].strip())
 
 rootdir = os.path.realpath(data['working-directory']) if ('working-directory' in data) else  os.getcwd()
 os.chdir(rootdir)
+buildpro_print('Working directory is now: "' + rootdir + '"')
 
 if data == None:
     print('Error: Invalid project file.')
@@ -234,8 +284,9 @@ for d in data['environment']:
     key, value = d.popitem()
     env[key] = value.format(**env)
 
-for value in data['require']:
-    shell_exec(value.format(**env), True)
+if 'require' in data:
+    for value in data['require']:
+        shell_exec(value.format(**env), True)
 
 #
 # Compiler option is MANDATORY!!!
@@ -254,7 +305,6 @@ else:
 # Includes paths
 if 'includes' in data:
     if data['includes'] != None:
-        # https://wiki.python.org/moin/HandlingExceptions
         try:
             for value in data['includes'].values():
                 value = value.format(**env).replace('$', '')
@@ -285,27 +335,30 @@ if ('libraries' in data) and (data['libraries'] != None):
     for value in data['libraries']:
         compiler.append_library(value)
 
-# append artifact name
-output = 'a.out'
-if 'artifact' in data:
-    output = data['artifact']['name']
-else:
-    if 'artefact' in data:
-        output = data['artefact']['name']
-
-compiler.set_output_artifact(0, output)
-
-# Append .exe extension if we are on Windows system
-if 'Windows' == platform.system():
-    output += '.exe'
+compiler.set_output_artifacts(data['artifacts'])
 
 # By default the build is no-clean
-# but clean may be enforced with an environment variable
+# but clean may be forced with an environment variable
 clean = 'clean' in env and env['clean']
 if clean:
-    buildpro_print('Removing old artifact(s) ...')
-    print('- ' + output)
-    os.remove(output);
+    buildpro_print('Clean build requested this time')
+    cwd = os.getcwd()
+    print('Removing old artifact(s) ...')
+    for file in data['artifacts']:
+        filepath = os.path.realpath(cwd + '/'+ file)
+        if os.path.isfile(filepath):
+            os.remove(filepath)
+        else:
+            print('- ' + file + ' ?')
+
+    print('')
+    print('Removing old object(s) ...')
+    for file in glob.glob(data['objects']):
+        filepath = os.path.realpath(cwd + '/' + file)
+        if os.path.isfile(filepath):
+            os.remove(filepath)
+        else:
+            print('- ' + file + ' ?')
 else:
     buildpro_print('"No clean" build')
     print('To clean artifacts prepend clean=1 \n')
@@ -316,7 +369,11 @@ try:
     log_file_name = 'buildpro.log'
     compiler.set_logfile(compiler_base.LOG_TYPE_BOTH, log_file_name)
     compiler.set_verbose(True)
-    shell_exec(compiler.get_command(), True)
+    cmd = compiler.get_command()
+    if None == cmd:
+        buildpro_print('ERROR: compiler.get_command() returned empty command')
+        buildpro_exit(1)
+    shell_exec(cmd, True)
 
     if os.path.exists(log_file_name):
         buildpro_print('Printing logs ...')
@@ -328,27 +385,30 @@ except subprocess.CalledProcessError:
     buildpro_print('Build FAILED. Bailing out.')
     buildpro_exit(1)
 
-buildpro_print('Checking artifacts ...')
-artifact_exists = os.path.exists(output) and os.path.isfile(output)
+# buildpro_print('Checking artifacts ...')
+# artifact_exists = os.path.exists(output) and os.path.isfile(output)
 
-if artifact_exists:
-    print(output + ' was created')
-    if 'deploy' in data:
-        for cmd in data['deploy']:
-            cmd = cmd.replace('{artifact.name}', './' + output)
-            cmd = cmd.format(**env).replace('$', '')
+#if artifact_exists:
+#     print(output + ' was created')
+#     if 'deploy' in data:
+#         for cmd in data['deploy']:
+#             cmd = cmd.replace('{artifact.name}', './' + output)
+#             cmd = cmd.format(**env).replace('$', '')
 
-            buildpro_print('Deploying ...')
-            shell_exec(cmd, True)
-else:
-    termcolor.cprint(output + ' does not exists.')
-    buildpro_exit(1)
+#             buildpro_print('Deploying ...')
+#             shell_exec(cmd, True)
+# else:
+#     termcolor.cprint(output + ' does not exists.')
+#     buildpro_exit(1)
+
+
+
 
 # if os.path.isfile('./' + output):
 #  print('### Running ' + output + ' ... ###');
 #  print(shell_exec('./' + output))
 
-buildpro_exit(0)
+buildpro_exit(0)        # **** EXIT ****
 
 # Scanning dependencies ...
 
