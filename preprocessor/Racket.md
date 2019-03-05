@@ -109,7 +109,7 @@ Multiple parameters
 @array:new[ int v 256 ]
 ```
 
-To you Racket inside scribble you have to `reuquire racket`. For instance:
+To use Racket inside scribble you have to `reuquire racket`. For instance:
 
 ```racket
 #lang scribble/text
