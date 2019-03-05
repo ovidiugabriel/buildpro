@@ -108,3 +108,12 @@ Multiple parameters
 ;; equivalent with:  (array:new int v 256)
 @array:new[ int v 256 ]
 ```
+
+To you Racket inside scribble you have to `reuquire racket`. For instance:
+
+```racket
+#lang scribble/text
+
+@(require racket)
+@(define ($ . rest) (map ~a rest))
+```
