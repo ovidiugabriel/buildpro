@@ -1,3 +1,26 @@
+
+### Racket Installation
+
+The version link in this documentation may be outdated. 
+Make sure you always check out the latest version available at https://download.racket-lang.org/
+
+```bash
+# make sure you download the latest version here ...
+wget https://mirror.racket-lang.org/installers/7.2/racket-7.2-x86_64-linux.sh
+
+# remove old version of racket
+sudo rm -rf /opt/racket
+
+# install the new version
+sudo bash ./racket-7.2-x86_64-linux.sh --in-place --dest /opt/racket --create-dir
+
+# create a symlink for the executables
+sudo ln -s /opt/racket/bin/racket /usr/bin/racket
+sudo ln -s /opt/racket/bin/drracket /usr/bin/drracket
+
+```
+### First Steps
+
 First simple console script in Racket ...
 
 ```racket
@@ -37,13 +60,26 @@ First simple console script in Racket ...
 ```racket
 #lang scribble/text
 
+@; this is a single line comment
+
+@;{
+    this is a
+    multiline comment
+}
+
+@; calling `display` with string argument
+@; will be the same as (display "hello world")
+
 @display{@; space not allowed between '@display' and '{'
 @; and not allowed between '{' and '@;'
     hello world
-} @; string argument
+}
 
-@display["hello world"] @;{ arguments in racket mode }
-@(display "hello world") @;{ racket mode expression }
+@;{ you can use arguments in racket mode }
+@display["hello world"] 
+
+@;{ or racket mode expression }
+@(display "hello world") 
 
 @; disables evaluation
 @display|{
