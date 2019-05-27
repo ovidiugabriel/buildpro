@@ -108,10 +108,7 @@ def parse_signature(sig):
 def parse_file(filename):
     parser = Parser()
     with open(filename) as fp:
-        line = fp.readline()
-        while line:
-            parser.parse_line(line)
-            line = fp.readline()
+        parser.scan_file(fp)
     return parser
 
 class Method:
@@ -143,6 +140,18 @@ class ParserState:
         self.in_function        = False
         self.in_class           = False
         self.current_function   = ''
+        self.line               = ''
+
+
+def parse_func_proto(func_proto):
+    matches = re.findall(r"^\s*(.*?)\s*function\s+(.*?)\((.*?)\)\s*:\s*(.*?)\s*$", func_proto, re.DOTALL)
+    if matches:
+        # print(matches)
+        func  = matches[0]
+        params  = parse_signature(func[2])
+
+        return Method(func[0], func[3], func[1], params)
+
 
 class Parser:
     def __init__(self):
@@ -159,42 +168,68 @@ class Parser:
         print('class_name: ' + self.class_name)
         print('state: '+ str(self.state))
 
-    def parse_line(self, inp):
-        if 0 == len(inp.strip()):
-            return
 
-        matches = re.findall(r"class\s*(.*?)\s*{", inp)
-        if matches:
-            self.class_name = matches[0]
-            self.state.in_class = True
+    def scan_file(self, fp):
+        in_header   = False
+        in_body     = False
+        in_class    = False
+        func_proto  = ''
+        current_function = ''
 
-        matches = re.findall(r"\s*(.*?)\s*function\s+(.*?)\((.*?)\)\s*:\s*(.*?)\s*{", inp, re.MULTILINE | re.DOTALL)
-        if matches:
-            func  = matches[0]
-            params  = parse_signature(func[2])
+        for line in fp:
+            line = line.rstrip("\n\r")
 
-            self.methods.append( Method(func[0], func[3], func[1], params) )
+            # empty line
+            if 0 == len(line.strip()):
+                continue
 
-            self.state.in_function = True
-            self.state.current_function = func[1]
-        else:
+            # match class name
+            matches = re.findall(r"class\s*(.*?)\s*{", line)
+            if matches:
+                self.class_name = matches[0]
+                in_class = True
+                continue
 
-            if self.state.in_function:
-                if '}' == inp.strip():
-                    self.state.in_function = False
-                    self.state.current_function = ''
-                    # end-method
+            # states
+            if in_header:
+                func_proto += replace_tab(line).lstrip(' ') + ' '
+
+                matches = re.findall(r"{", line)
+                if matches:
+                    # entered function body
+                    in_header = False
+                    in_body = True
+                    func_proto = re.sub('\\s+', ' ',func_proto).rstrip('{ ')
+                    func_proto = func_proto.replace('( ', '(')
+                    method = parse_func_proto(func_proto)
+                    current_function = method.function_name
+                    self.methods.append(method)
+
+            elif in_body:
+
+                if '}' == line.strip():
+                    in_function      = False
+                    current_function = ''
 
                 else:
-                    if self.state.current_function not in self.method_code:
-                        self.method_code[ self.state.current_function ] = ''
+                    if current_function not in self.method_code:
+                        self.method_code[ current_function ] = ''
 
-                    self.method_code[ self.state.current_function ] += inp
+                    self.method_code[ current_function ] += line
 
-            elif self.state.in_class:
-                if '}' == inp.strip():
-                    self.state.in_class = False
-                    # end-class
+            else:
+                # not yet in a function
+
+                # 'function' token or other tokens that can appeare before
+                # 'function' keyword
+                matches = re.findall(r"function|static|public|private", line)
+                if matches:
+                    # just entered a function
+                    func_proto += replace_tab(line).lstrip(' ') + ' '
+                    in_header = True
+                else:
+                    # definitely not in a function
+                    pass
 
 #
 # Main code
