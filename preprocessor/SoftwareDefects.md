@@ -38,7 +38,7 @@ Of course it is not only about libraries here. I am advertising **Language Orien
 And we now found that good developer skill means to know how to choose the right library, how to design your interfaces
 and how to decouple concerns, etc. But all of these are already included in the law of abstraction. *"The greater the abstraction is, the lower bug density. "*
 
-You don't have to trust me. Here we have an example from C++ Core Guidelines (by Bjarne Stroustrup and Herb Sutter).
+You don't have to trust me. Here we have an example from [C++ Core Guidelines (by Bjarne Stroustrup and Herb Sutter)](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines).
 
 Section P.1: Express ideas directly in code
 
@@ -84,6 +84,8 @@ void f(vector<string>& v) {
 * [Industrial Strength C++ - Mats Henricson and Erik Nyquist](https://www.tiobe.com/files/industrial-strength.pdf)
 * C++ Coding Standards: 101 Rules, Guidelines, and Best Practices - Herb Sutter, Andrei Alexandrescu
 * Herb Sutter - Exceptional C++ and More Exceptional C++ 
+* [ISO C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
+
 
 ##### Collections of confusing code snippets (unofficial)
 
