@@ -80,11 +80,11 @@ void f(vector<string>& v) {
 * Motor Industry Software Reliability Association (MISRA) Guidelines For The Use Of The C Language In Vehicle Based Software
 * Vehicle Systems Safety Critical Coding Standards for C
 * Scott Meyers - Effective C++ and More Effective C++
-* [C++ Core Guidelines - Bjarne Stroustrup and Herb Sutter](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
+* [ISO C++ Core Guidelines - Bjarne Stroustrup and Herb Sutter](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
 * [Industrial Strength C++ - Mats Henricson and Erik Nyquist](https://www.tiobe.com/files/industrial-strength.pdf)
 * C++ Coding Standards: 101 Rules, Guidelines, and Best Practices - Herb Sutter, Andrei Alexandrescu
 * Herb Sutter - Exceptional C++ and More Exceptional C++ 
-* [ISO C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
+
 
 
 ##### Collections of confusing code snippets (unofficial)
