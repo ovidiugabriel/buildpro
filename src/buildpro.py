@@ -115,6 +115,7 @@ def get_inline_command(filename):
     cmd = ""
     line_no  = 0
     def_line = 0
+
     with open(filename, 'r') as f:
         for line in f:
             line_no = line_no + 1
@@ -132,6 +133,11 @@ def get_inline_command(filename):
                     cmd = cmd.replace('$dirname', os.path.dirname(filepath))
                     cmd = cmd.replace('$basename', os.path.basename(filepath))
                     def_line = line_no
+
+    if "" == cmd:
+        buildpro_print('ERROR: @buildpro tag not found for -inline option')
+        buildpro_exit(1)
+
     return cmd
 
 """
@@ -202,7 +208,10 @@ if '-inline' == sys.argv[1].strip():
     try:
         shell_exec(get_inline_command(sys.argv[2]), True)
     except Exception as ex:
-        buildpro_exit(ex.returncode)
+        buildpro_print('Exception: ' + str(ex))
+        traceback.print_exc(file=sys.stdout)
+        buildpro_exit(1)
+
     buildpro_exit(0)
 
 if '-proto' == sys.argv[1].strip():
