@@ -51,8 +51,8 @@ update-buildpro:
 install-home:
 	if [ -f setup.py ] ; then rm setup.py ; fi
 	curl -s $(MASTER)/setup.py -o setup.py
-	pip install pyyaml
-        pip install termcolor --user
+	pip3 install pyyaml --user
+        pip3 install termcolor --user
 
 	if [ -e /usr/bin/python3 ] ; then /usr/bin/python3 setup.py ; else python setup.py ; fi
 	chmod +x ./buildpro
