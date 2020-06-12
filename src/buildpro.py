@@ -46,6 +46,8 @@ from prototyping import proto
 from sublime_folder import sublime_folder
 from sublime_project import sublime_project
 
+from yaml import SafeLoader
+
 # Some 'contants' definitions
 BOLD="\033[1m"
 RESET="\033[0m"
@@ -156,7 +158,7 @@ def read_sublime_project(path):
 def parse_project(project):
     project_file = project + '.project.yml'
     stream = open(project_file, 'r')
-    return yaml.load(stream)
+    return yaml.load(stream, Loader=SafeLoader)
 
 
 def glob_tup_sources(deps, input_pattern, runner, output_pattern):
@@ -171,6 +173,10 @@ def glob_tup_sources(deps, input_pattern, runner, output_pattern):
 
         deps.append({inputf: [runner + ' '+ inputf, object_path.replace('\\', '/')]})
         tup_objects[object_path] = inputf
+
+def command_exits(binary):
+    # TODO: Extend to accept commands that are not files (alias, PATH, etc)
+    return os.path.isfile(binary)
 
 def print_usage_option(options, description):
     print(bold('    ' + options))
@@ -379,6 +385,12 @@ try:
     compiler.set_logfile(compiler_base.LOG_TYPE_BOTH, log_file_name)
     compiler.set_verbose(True)
     cmd = compiler.get_command()
+    parts = cmd.split(' ')
+
+    if not command_exits(parts[0]):
+        buildpro_print('ERROR: No such file: ' + parts[0])
+        buildpro_exit(1)
+
     if None == cmd:
         buildpro_print('ERROR: compiler.get_command() returned empty command')
         buildpro_exit(1)

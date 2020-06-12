@@ -45,3 +45,12 @@ class compiler_base:
 
     def set_verbose(self, verbose):
         self.verbose = verbose
+
+    def set_command(self, command):
+        self.command = command
+
+    def set_output_artifacts(self, artifacts):
+        pass
+
+    def get_command(self):
+        return self.command
