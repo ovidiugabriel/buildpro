@@ -13,9 +13,10 @@ It is a tool for build professionals (with a role of build manager in some compa
 Install it in your home folder (in case you don't have root access)
 
 ```bash
-curl https://raw.githubusercontent.com/ovidiugabriel/buildpro/master/Makefile -o Makefile
-make update-buildpro
-make install-home
+curl https://raw.githubusercontent.com/ovidiugabriel/buildpro/master/install-home.sh -o install-home.sh
+bash install-home.sh
+curl https://raw.githubusercontent.com/ovidiugabriel/buildpro/master/update-buildpro.sh -o update-buildpro.sh
+bash update-buildpro.sh
 ```
 [![asciicast](https://asciinema.org/a/201280.png)](https://asciinema.org/a/201280)
 
