@@ -7,7 +7,7 @@
 #
 #  Created on:  24.10.2015 at 08:59:46
 #  Copyright:   (C) 2015-2018 ICE Control srl. All Rights Reserved.
-#               (C) 2018 SoftICE Development Oy. All Rights Reserved.
+#               (C) 2018-2020 SoftICE Development Oy. All Rights Reserved.
 #
 # *************************************************************************
 #
@@ -194,8 +194,9 @@ def print_usage():
     print_usage_option('-h, -help, --help', 'display this help and exit')
     print_usage_option('-inline <file-path>', 'invoke compiler using inline @buildpro annotation')
     print_usage_option('-proto <language> <class-name> <input-file> <output-file>', '')
-    print_usage_option('-create', '')
-    print_usage_option('-list', '')
+    print_usage_option('-subl:create <project-name>', 'creates a sublime project; project-name should be a child folder in the current directory\n' +
+                       '        the output file is <project-name>/<project-name>.sublime-project')
+    print_usage_option('-subl:list <project-name>', 'lists folders included in sublime project;  project-name should be a child folder in the current directory')
 
 
 #
@@ -227,7 +228,7 @@ if '-proto' == sys.argv[1].strip():
         buildpro_exit(int(str(ex)))
     buildpro_exit(0)
 
-if '-create' == sys.argv[1].strip():
+if '-subl:create' == sys.argv[1].strip():
     folder_path = sys.argv[2]
     buildpro_print('Create project for: ' + os.path.realpath(folder_path))
     folder_name = folder_path.strip('/').replace('/', '-')
@@ -245,13 +246,15 @@ if '-create' == sys.argv[1].strip():
         print('Saved ' + project_file)
     buildpro_exit(0)
 
-if '-list' == sys.argv[1].strip():
+if '-subl:list' == sys.argv[1].strip():
     data = read_sublime_project(sys.argv[2])
 
+    print('Folders in this project:')
+    i = 1
     for folder in data["folders"]:
         name = folder['name'] if 'name' in folder else os.path.basename(folder["path"])
-        print('Path: ' + folder["path"])
-        print('Name: ' + name)
+        print(str(i) + ')  - Path: ' + folder["path"])
+        print('    - Name: ' + name)
         print('')
     buildpro_exit(0)
 
