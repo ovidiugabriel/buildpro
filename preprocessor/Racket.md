@@ -82,13 +82,16 @@ First simple console script in Racket ...
 @(display "hello world") 
 
 @; disables evaluation
+@; This will print @(number->string (+ 1 2))
 @display|{
   @(number->string (+ 1 2))
 }|
 ```
 
+
 ```racket
 @; evaluation enabled
+@; This will print  3
 @display{
   @(number->string (+ 1 2))
 }
