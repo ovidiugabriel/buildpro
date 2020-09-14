@@ -120,3 +120,24 @@ To use Racket inside scribble you have to `reuquire racket`. For instance:
 @(require racket)
 @(define ($ . rest) (map ~a rest))
 ```
+
+A simple example of preprocessing code using Scribble:
+
+```racket
+#lang scribble/text
+
+@(define (env-ifdef name proc-expr)
+   (cond
+     [(non-empty-string? (getenv name)) proc-expr] ) )
+
+@(define ($ x) x)
+
+@env-ifdef["OS1_BUILD" @$|{
+            my crazy code
+            }|]
+
+@env-ifdef["OS2_BUILD" @$|{
+            some other code
+            }|]
+
+```
